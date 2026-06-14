@@ -1,7 +1,8 @@
 // components/scenarios-view/scenarios-view.ts
 import { SCENARIOS, Scenario } from '../../utils/scenarios';
 import { segmentThai, SegmentedWord } from '../../utils/segment';
-import { playThaiTTS, stopThaiTTS } from '../../utils/tts';
+import { playThaiTTS, stopThaiTTS, preFetchGoogleTTS } from '../../utils/tts';
+import { getConfig } from '../../utils/config';
 import { 
   getHistory, 
   saveHistoryItem, 
@@ -224,6 +225,16 @@ Component({
       const roleIds = Object.keys(scenario.characters);
       const leftRoleId = roleIds[0] || '';
       const rightRoleId = roleIds[1] || '';
+
+      // 异步预下载整场对话的 Google TTS 音频文件到本地缓存，免去播放延迟和国内墙 Google 问题
+      const config = getConfig();
+      if (config.useGoogleTTS) {
+        scenario.dialogues.forEach(turn => {
+          preFetchGoogleTTS(turn.thai).catch(err => {
+            console.warn('Pre-fetch scenario TTS failed:', err);
+          });
+        });
+      }
 
       this.setData({
         activeScenario,

@@ -5,6 +5,7 @@ export interface AppConfig {
   baiduApiKey: string;
   speechRate: number; // 0.75, 1.0, 1.25, 1.5
   useGoogleTTS?: boolean;
+  audioBaseUrl?: string; // 离线音频托管服务器基地址
 }
 
 const STORAGE_KEY = 'thai_learner_config';
@@ -14,6 +15,7 @@ const defaultConfig: AppConfig = {
   baiduApiKey: '',
   speechRate: 1.0,
   useGoogleTTS: false,
+  audioBaseUrl: '',
 };
 
 export function getConfig(): AppConfig {

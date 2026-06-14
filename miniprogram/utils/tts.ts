@@ -413,6 +413,98 @@ function playViaYoudao(
   }, 100) as unknown as number;
 }
 
+function getSafeHash(str: string): string {
+  let hash1 = 5381;
+  let hash2 = 3381;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash1 = ((hash1 << 5) + hash1) + char;
+    hash2 = ((hash2 << 5) + hash2) ^ char;
+  }
+  return (hash1 >>> 0).toString(16) + "_" + (hash2 >>> 0).toString(16);
+}
+
+const fs = wx.getFileSystemManager();
+const localFolder = `${wx.env.USER_DATA_PATH}/tts_cache`;
+
+function ensureCacheDir(): void {
+  try {
+    fs.accessSync(localFolder);
+  } catch (e) {
+    try {
+      fs.mkdirSync(localFolder, true);
+    } catch (err) {
+      console.error('Failed to create tts_cache folder:', err);
+    }
+  }
+}
+
+function getLocalAudioPath(text: string): string {
+  ensureCacheDir();
+  return `${localFolder}/${getSafeHash(text)}.mp3`;
+}
+
+function isAudioCached(localPath: string): boolean {
+  try {
+    fs.accessSync(localPath);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * 异步下载并缓存 Google TTS 音频文件
+ */
+export function preFetchGoogleTTS(text: string): Promise<string> {
+  const cleanText = text.trim();
+  if (!cleanText) return Promise.reject('Empty text');
+
+  const localPath = getLocalAudioPath(cleanText);
+  if (isAudioCached(localPath)) {
+    return Promise.resolve(localPath);
+  }
+
+  return new Promise((resolve, reject) => {
+    const config = getConfig();
+    let downloadUrl = '';
+    
+    // 如果配置了自定义音频基地址，则从自定义服务器下载 pre-downloaded Google TTS MP3
+    if (config.audioBaseUrl) {
+      const hash = getSafeHash(cleanText);
+      downloadUrl = `${config.audioBaseUrl.replace(/\/$/, '')}/${hash}.mp3`;
+    } else {
+      // 否则直连谷歌 TTS 接口
+      downloadUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
+    }
+
+    wx.downloadFile({
+      url: downloadUrl,
+      success: (res) => {
+        if (res.statusCode === 200) {
+          fs.saveFile({
+            tempFilePath: res.tempFilePath,
+            filePath: localPath,
+            success: () => {
+              console.log('Cached Google TTS successfully:', cleanText);
+              resolve(localPath);
+            },
+            fail: (err) => {
+              console.error('Failed to save cached TTS file:', err);
+              resolve(res.tempFilePath);
+            }
+          });
+        } else {
+          reject(new Error(`Download failed: statusCode ${res.statusCode}`));
+        }
+      },
+      fail: (err) => {
+        reject(err);
+      }
+    });
+  });
+}
+
 /**
  * 播放泰语发音
  * @param text 要播放的泰语文本
@@ -437,60 +529,73 @@ export function playThaiTTS(
       return;
     }
 
-    // A. 如果用户开启了 Google 高级发音通道，优先使用 Google TTS
+    // A. 如果用户开启了 Google 高级发音通道，优先使用 Google TTS (带本地缓存)
     if (config.useGoogleTTS) {
       const { ctxA } = getAudioContexts();
       globalOnEnded = onEnded || null;
 
-      const googleSrc = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
-
-      ctxA.offPlay();
-      ctxA.offCanplay();
-      ctxA.offEnded();
-      ctxA.offError();
-
+      const localPath = getLocalAudioPath(cleanText);
       const adjustedRate = Math.min(2.0, rate);
 
-      ctxA.onPlay(() => {
-        ctxA.playbackRate = adjustedRate;
-        if (onStart) {
-          try {
-            onStart();
-          } catch (e) {
-            console.error('onStart callback error:', e);
+      const playAudio = (src: string) => {
+        ctxA.offPlay();
+        ctxA.offCanplay();
+        ctxA.offEnded();
+        ctxA.offError();
+
+        ctxA.onPlay(() => {
+          ctxA.playbackRate = adjustedRate;
+          if (onStart) {
+            try {
+              onStart();
+            } catch (e) {
+              console.error('onStart callback error:', e);
+            }
           }
-        }
-      });
+        });
 
-      ctxA.onCanplay(() => {
-        ctxA.playbackRate = adjustedRate;
-      });
+        ctxA.onCanplay(() => {
+          ctxA.playbackRate = adjustedRate;
+        });
 
-      ctxA.onEnded(() => {
-        const cb = globalOnEnded;
-        stopThaiTTS();
-        if (cb) {
-          try {
-            cb();
-          } catch (e) {
-            console.error('onEnded callback error:', e);
+        ctxA.onEnded(() => {
+          const cb = globalOnEnded;
+          stopThaiTTS();
+          if (cb) {
+            try {
+              cb();
+            } catch (e) {
+              console.error('onEnded callback error:', e);
+            }
           }
-        }
-      });
+        });
 
-      ctxA.onError((err) => {
-        console.warn(`Google TTS failed for "${cleanText}", falling back to Youdao. Error:`, err);
-        // Google 播放出错，则静默降级为有道播放方案
-        playViaYoudao(cleanText, rate, undefined, onEnded);
-      });
+        ctxA.onError((err) => {
+          console.warn(`Google TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
+          playViaYoudao(cleanText, rate, undefined, onEnded);
+        });
 
-      playTimeoutId = setTimeout(() => {
-        ctxA.src = googleSrc;
-        ctxA.playbackRate = adjustedRate;
-        ctxA.play();
-        playTimeoutId = null;
-      }, 100) as unknown as number;
+        playTimeoutId = setTimeout(() => {
+          ctxA.src = src;
+          ctxA.playbackRate = adjustedRate;
+          ctxA.play();
+          playTimeoutId = null;
+        }, 100) as unknown as number;
+      };
 
+      if (isAudioCached(localPath)) {
+        playAudio(localPath);
+      } else {
+        preFetchGoogleTTS(cleanText)
+          .then((cachedPath) => {
+            playAudio(cachedPath);
+          })
+          .catch((err) => {
+            console.warn(`Pre-fetch Google TTS failed for "${cleanText}", playing from remote URL. Error:`, err);
+            const googleUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
+            playAudio(googleUrl);
+          });
+      }
       return;
     }
 
