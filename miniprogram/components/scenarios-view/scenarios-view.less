@@ -1,0 +1,964 @@
+/* components/scenarios-view/scenarios-view.less */
+
+.scenarios-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #f8fafc;
+}
+
+/* ==========================================
+   1. 场景列表页样式
+   ========================================== */
+.list-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+.category-tabs {
+  display: flex;
+  background: #e2e8f0;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.category-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 8px 0;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.category-tab.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.list-scroll {
+  flex: 1;
+  height: 0;
+}
+
+.cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scenario-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.scenario-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  background: #f8fafc;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.category-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.category-badge.daily {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.category-badge.classic {
+  background: #faf5ff;
+  color: #a855f7;
+}
+
+.difficulty-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.difficulty-badge.easy {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.difficulty-badge.medium {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.difficulty-badge.hard {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 0.5px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+.turns-count {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.start-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.start-btn .arrow {
+  transition: transform 0.2s ease;
+}
+
+.scenario-card:active .start-btn .arrow {
+  transform: translateX(4px);
+}
+
+.empty-tip {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  padding: 40px 0;
+}
+
+.bottom-padding {
+  height: 40px;
+}
+
+
+/* ==========================================
+   2. 交互式剧场播放页样式
+   ========================================== */
+.player-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 0.5px solid #e2e8f0;
+}
+
+.back-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.back-arrow {
+  font-size: 18px;
+  color: #4f46e5;
+  font-weight: bold;
+}
+
+.back-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.auto-play-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-label {
+  font-size: 13px;
+  color: #475569;
+}
+
+.toggle-switch {
+  transform: scale(0.8);
+}
+
+/* 角色立绘展示舞台 */
+.characters-stage {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 16px 8px 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-bottom: 0.5px solid #cbd5e1;
+  height: 110px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.stage-actor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40%;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: scale(0.9);
+  opacity: 0.65;
+}
+
+.stage-actor.active-talking {
+  transform: scale(1.08);
+  opacity: 1;
+  animation: actorBounce 0.4s ease-out;
+}
+
+.stage-actor.hidden-actor {
+  display: none;
+}
+
+.actor-avatar-wrapper {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.actor-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.active-talking .actor-avatar {
+  box-shadow: 0 0 0 3px #4f46e5, 0 6px 14px rgba(79, 70, 229, 0.2);
+}
+
+/* 头像外圈正在说话的波纹 */
+.talking-ripple {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  border: 3px solid #4f46e5;
+  animation: rippleGlow 1.5s infinite ease-out;
+  pointer-events: none;
+}
+
+.actor-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #1e293b;
+  margin-top: 4px;
+  text-align: center;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actor-role {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* 聊天流内容区 */
+.chat-scroll {
+  flex: 1;
+  height: 0;
+  background: #f8fafc;
+}
+
+.chat-flow {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dialogue-line-container {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.hidden-line {
+  display: none;
+}
+
+.visible-line {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* 旁白卡片居中样式 */
+.center-narrative {
+  justify-content: center;
+  padding: 4px 12px;
+}
+
+.narrative-box {
+  background: rgba(226, 232, 240, 0.75);
+  border-radius: 12px;
+  padding: 10px 16px;
+  max-width: 85%;
+  text-align: center;
+  border: 1px solid rgba(203, 213, 225, 0.4);
+  transition: all 0.2s;
+}
+
+.narrative-box.active-highlight {
+  border-color: #64748b;
+  background: rgba(226, 232, 240, 1);
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.1);
+  transform: scale(1.02);
+}
+
+.narrative-thai {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.narrative-thai .thai-txt {
+  font-size: 16px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.narrative-chinese {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* 左右气泡布局 */
+.bubble-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.speech-bubble-group {
+  display: flex;
+  flex-direction: column;
+  max-width: 75%;
+}
+
+.speaker-title {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.speech-bubble {
+  padding: 12px 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.speech-thai {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.speech-thai .thai-txt {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.speech-chinese {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.play-mini-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* 左侧气泡风格 (角色 A/左角色) */
+.left-speech {
+  flex-direction: row;
+  justify-content: flex-start;
+  
+  .bubble-avatar {
+    margin-right: 10px;
+  }
+  
+  .speaker-title {
+    text-align: left;
+    margin-left: 4px;
+  }
+  
+  .speech-bubble {
+    background: #ffffff;
+    color: #1e293b;
+    border-top-left-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    
+    .speech-thai .thai-txt {
+      color: #0f172a;
+    }
+    .speech-chinese {
+      color: #475569;
+    }
+  }
+}
+
+/* 右侧气泡风格 (角色 B/右角色) */
+.right-speech {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  
+  .bubble-avatar {
+    margin-left: 10px;
+  }
+  
+  .speaker-title {
+    text-align: right;
+    margin-right: 4px;
+  }
+  
+  .speech-bubble {
+    background: #eff6ff;
+    color: #1e293b;
+    border-top-right-radius: 4px;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    
+    .speech-thai .thai-txt {
+      color: #1d4ed8;
+    }
+    .speech-chinese {
+      color: #3b82f6;
+    }
+  }
+}
+
+/* 激活高亮样式 */
+.speech-bubble.active-highlight {
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
+  transform: scale(1.02);
+}
+
+.left-speech .speech-bubble.active-highlight {
+  border-color: rgba(79, 70, 229, 0.25);
+  background: #fafaff;
+}
+
+.right-speech .speech-bubble.active-highlight {
+  border-color: rgba(79, 70, 229, 0.25);
+  background: #f5f9ff;
+}
+
+/* 正在播放的语音发光效果 */
+.talking-glow {
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
+  
+  .play-mini-icon {
+    opacity: 1;
+    animation: bounceIcon 0.8s infinite alternate;
+  }
+}
+
+.bottom-padding-chat {
+  height: 120px;
+}
+
+
+/* ==========================================
+   3. 底部控制台样式
+   ========================================== */
+.player-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 0.5px solid #e2e8f0;
+  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px) 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* 进度条 */
+.progress-bar-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.progress-steps {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #f5f3ff;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #818cf8);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* 控制按钮组 */
+.control-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ctrl-btn {
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 99px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: 1;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  line-height: 1;
+}
+
+.ctrl-btn.primary {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.ctrl-btn.secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.ctrl-btn.disabled {
+  background: #f8fafc;
+  color: #cbd5e1;
+  border-color: #f1f5f9;
+}
+
+.ctrl-btn.play-again {
+  background: #f5f3ff;
+  color: #4f46e5;
+  border: 1px solid #ddd6fe;
+  flex: 0.8;
+  gap: 4px;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* 工具辅助动作 */
+.utility-actions {
+  display: flex;
+  justify-content: space-around;
+  border-top: 0.5px solid #f1f5f9;
+  padding-top: 10px;
+}
+
+.util-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 6px 12px;
+}
+
+.util-action-btn:active {
+  color: #4f46e5;
+}
+
+.util-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.util-star-icon {
+  font-size: 16px;
+  color: #cbd5e1;
+  line-height: 1;
+}
+
+.util-star-icon.starred {
+  color: #eab308;
+  animation: starScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+
+/* ==========================================
+   4. 词汇拆解半屏面板 (Bottom Sheet) 样式
+   ========================================== */
+.bottom-sheet-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.bottom-sheet-mask.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bottom-sheet-content {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  max-height: 70vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  z-index: 510;
+  box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-sheet-content.show {
+  transform: translateY(0);
+}
+
+.sheet-header {
+  padding: 12px 20px 16px;
+  border-bottom: 0.5px solid #f1f5f9;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-indicator {
+  width: 36px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 12px;
+}
+
+.sheet-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.sheet-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0f172a;
+}
+
+.sheet-close {
+  font-size: 16px;
+  color: #94a3b8;
+  padding: 4px 8px;
+}
+
+.sheet-sentence-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 0.5px solid #e2e8f0;
+}
+
+.preview-thai {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4f46e5;
+  line-height: 1.4;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.preview-play {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.sheet-scroll {
+  flex: 1;
+  height: 0;
+}
+
+.words-list {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.word-card-item {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.word-card-item:active {
+  background: #f8fafc;
+}
+
+.unknown-card {
+  border-style: dashed;
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(254, 242, 242, 0.2);
+}
+
+.word-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.word-spelling {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.unknown-card .word-spelling {
+  color: #ef4444;
+}
+
+.word-play-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+
+.word-phonetic {
+  font-size: 13px;
+  color: #64748b;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.word-phonetic.placeholder {
+  color: #cbd5e1;
+  font-style: normal;
+}
+
+.word-meaning {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.unknown-card .word-meaning {
+  color: #ef4444;
+  text-decoration: underline;
+}
+
+.word-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 0.5px solid #f1f5f9;
+  padding-top: 8px;
+}
+
+.word-action-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 99px;
+  transition: all 0.2s;
+}
+
+.word-action-tag.starred {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.sheet-tip {
+  font-size: 11px;
+  color: #94a3b8;
+  padding: 0 20px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.bottom-padding-sheet {
+  height: 30px;
+}
+
+
+/* ==========================================
+   5. 关键帧帧动画定义 (Animations)
+   ========================================== */
+
+/* 角色说话时的弹跳动效 */
+@keyframes actorBounce {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.12) translateY(-6px); }
+  65% { transform: scale(1.06) translateY(2px); }
+  100% { transform: scale(1.08) translateY(0); }
+}
+
+/* 微信聊天气泡渐入效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 头像说话时外部光晕发散动画 */
+@keyframes rippleGlow {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+}
+
+/* 气泡播放小喇叭抖动效果 */
+@keyframes bounceIcon {
+  0% { transform: scale(0.9); }
+  100% { transform: scale(1.1); }
+}
+
+/* 星星收藏爆开反馈动画 */
+@keyframes starScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}

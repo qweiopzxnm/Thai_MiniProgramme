@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#BFDBFE" />
+      <stop offset="100%" stop-color="#93C5FD" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#blueGrad)" />
+  <!-- Hair -->
+  <path d="M28 50c0-12 10-18 22-18s22 6 22 18z" fill="#374151" />
+  <!-- Neck -->
+  <rect x="46" y="62" width="8" height="10" rx="4" fill="#FDBA74" />
+  <!-- Face -->
+  <circle cx="50" cy="48" r="22" fill="#FDBA74" />
+  <!-- Sunglasses -->
+  <rect x="36" y="44" width="12" height="8" rx="2" fill="#1F2937" />
+  <rect x="52" y="44" width="12" height="8" rx="2" fill="#1F2937" />
+  <line x1="48" y1="46" x2="52" y2="46" stroke="#1F2937" stroke-width="2" />
+  <!-- Smile -->
+  <path d="M46 56q4 3 8 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round" fill="none" />
+  <!-- Straw Hat -->
+  <path d="M25 38c5-10 45-10 50 0z" fill="#FDE047" />
+  <ellipse cx="50" cy="38" rx="30" ry="4" fill="#EAB308" />
+  <!-- Clothes -->
+  <path d="M30 80c5-12 11-14 20-14s15 2 20 14z" fill="#0EA5E9" />
+</svg>

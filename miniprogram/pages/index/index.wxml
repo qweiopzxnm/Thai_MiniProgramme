@@ -17,6 +17,13 @@
       bind:historychange="onHistoryChange"
       bind:switchtab="onSwitchTabFromComponent"
     ></import-view>
+
+    <scenarios-view
+      id="scenariosView"
+      class="view-item"
+      wx:elif="{{activeTab === 'scenarios'}}"
+      bind:historychange="onHistoryChange"
+    ></scenarios-view>
     
     <review-view 
       id="reviewView" 
@@ -42,6 +49,10 @@
     <view class="tab-item {{activeTab === 'import' ? 'active' : ''}}" data-tab="import" bindtap="onSwitchTab">
       <image class="tab-icon" src="/assets/icons/import{{activeTab === 'import' ? '-active' : ''}}.svg" />
       <text class="tab-text">自建</text>
+    </view>
+    <view class="tab-item {{activeTab === 'scenarios' ? 'active' : ''}}" data-tab="scenarios" bindtap="onSwitchTab">
+      <image class="tab-icon" src="/assets/icons/scenarios{{activeTab === 'scenarios' ? '-active' : ''}}.svg" />
+      <text class="tab-text">情景</text>
     </view>
     <view class="tab-item {{activeTab === 'review' ? 'active' : ''}}" data-tab="review" bindtap="onSwitchTab">
       <image class="tab-icon" src="/assets/icons/review{{activeTab === 'review' ? '-active' : ''}}.svg" />

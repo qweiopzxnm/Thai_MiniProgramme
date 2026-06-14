@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FED7AA" />
+      <stop offset="100%" stop-color="#FDBA74" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#orangeGrad)" />
+  <!-- Hair back -->
+  <path d="M28 48c0-15 44-15 44 0z" fill="#1F2937" />
+  <!-- Neck -->
+  <rect x="46" y="62" width="8" height="10" rx="4" fill="#FDBA74" />
+  <!-- Face -->
+  <circle cx="50" cy="48" r="22" fill="#FDBA74" />
+  <!-- Ears -->
+  <circle cx="27" cy="48" r="5" fill="#FDBA74" />
+  <circle cx="73" cy="48" r="5" fill="#FDBA74" />
+  <!-- Cap/Hair front -->
+  <path d="M28 40c6-8 12-10 22-10s16 2 22 10c-3-2-8-3-12-1-3 1-5 4-10 4s-7-3-10-4c-4-2-9-1-12 1z" fill="#1F2937" />
+  <!-- Cap peak / details -->
+  <path d="M32 32c5-10 31-10 36 0z" fill="#2563EB" />
+  <!-- Eyes -->
+  <circle cx="43" cy="48" r="2.5" fill="#111827" />
+  <circle cx="57" cy="48" r="2.5" fill="#111827" />
+  <!-- Smile -->
+  <path d="M46 54q4 4 8 0" stroke="#111827" stroke-width="2" stroke-linecap="round" fill="none" />
+  <!-- Clothes -->
+  <path d="M30 80c5-12 11-14 20-14s15 2 20 14z" fill="#3B82F6" />
+</svg>

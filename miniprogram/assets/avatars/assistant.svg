@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="violetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3E8FF" />
+      <stop offset="100%" stop-color="#E9D5FF" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#violetGrad)" />
+  <!-- Hair -->
+  <path d="M26 46c0-12 12-18 24-18s24 6 24 18z" fill="#4B5563" />
+  <!-- Neck -->
+  <rect x="46" y="62" width="8" height="10" rx="4" fill="#FDBA74" />
+  <!-- Face -->
+  <circle cx="50" cy="48" r="22" fill="#FDBA74" />
+  <!-- Eyes -->
+  <circle cx="43" cy="48" r="2.5" fill="#111827" />
+  <circle cx="57" cy="48" r="2.5" fill="#111827" />
+  <!-- Smile -->
+  <path d="M46 54q4 3 8 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round" fill="none" />
+  <!-- Clothes -->
+  <path d="M30 80c5-12 11-14 20-14s15 2 20 14z" fill="#7C3AED" />
+  <!-- Collar -->
+  <path d="M44 66l6 8 6-8z" fill="#FFF" />
+</svg>

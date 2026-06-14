@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="slateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0" />
+      <stop offset="100%" stop-color="#CBD5E1" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#slateGrad)" />
+  <!-- Book Icon or Speaker Icon -->
+  <path d="M30 35a5 5 0 0 1 5-5h30a5 5 0 0 1 5 5v30a5 5 0 0 1-5 5H35a5 5 0 0 1-5-5z" fill="#475569" />
+  <path d="M50 30v40" stroke="#94A3B8" stroke-width="2" />
+  <path d="M38 42h8M38 50h8M38 58h8M54 42h8M54 50h8M54 58h8" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" />
+</svg>

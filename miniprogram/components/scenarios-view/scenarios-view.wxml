@@ -1,0 +1,245 @@
+<!--components/scenarios-view/scenarios-view.wxml-->
+<view class="scenarios-container">
+  
+  <!-- 1. 场景/课文列表页 -->
+  <view class="list-wrapper" wx:if="{{!activeScenario}}">
+    <!-- 分类筛选器 -->
+    <view class="category-tabs">
+      <view class="category-tab {{selectedCategory === 'all' ? 'active' : ''}}" data-cat="all" bindtap="onSwitchCategory">
+        全部
+      </view>
+      <view class="category-tab {{selectedCategory === '생활情景' ? 'active' : ''}}" data-cat="생활情景" bindtap="onSwitchCategory">
+        日常情景
+      </view>
+      <view class="category-tab {{selectedCategory === '经典课文' ? 'active' : ''}}" data-cat="经典课文" bindtap="onSwitchCategory">
+        经典课文
+      </view>
+    </view>
+
+    <!-- 列表内容 -->
+    <scroll-view class="list-scroll" scroll-y>
+      <view class="cards-grid">
+        <view 
+          class="scenario-card" 
+          wx:for="{{filteredScenarios}}" 
+          wx:key="id" 
+          bindtap="onSelectScenario" 
+          data-id="{{item.id}}"
+        >
+          <view class="card-header">
+            <text class="category-badge {{item.category === '经典课文' ? 'classic' : 'daily'}}">{{item.category}}</text>
+            <text class="difficulty-badge {{item.difficulty === '初级' ? 'easy' : (item.difficulty === '中级' ? 'medium' : 'hard')}}">{{item.difficulty}}</text>
+          </view>
+          
+          <view class="card-title">{{item.title}}</view>
+          <view class="card-desc">{{item.description}}</view>
+          
+          <view class="card-footer">
+            <text class="turns-count">共 {{item.dialogues.length}} 句对话</text>
+            <view class="start-btn">
+              <text>进入学习</text>
+              <text class="arrow">➔</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="empty-tip" wx:if="{{filteredScenarios.length === 0}}">
+        暂无该分类的场景课文
+      </view>
+      <view class="bottom-padding"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 2. 交互式剧场播放页 -->
+  <view class="player-wrapper" wx:else>
+    <!-- 顶部状态栏 -->
+    <view class="player-header">
+      <view class="back-action" bindtap="onBackToList">
+        <text class="back-arrow">←</text>
+        <text class="back-text">返回列表</text>
+      </view>
+      
+      <view class="auto-play-toggle">
+        <text class="toggle-label">自动播放</text>
+        <switch class="toggle-switch" checked="{{autoPlay}}" color="#4F46E5" bindchange="onToggleAutoPlay" />
+      </view>
+    </view>
+
+    <!-- 角色状态展示板 (Visual Novel 立绘效果) -->
+    <view class="characters-stage">
+      <view 
+        class="stage-actor {{character.id === activeRoleId ? 'active-talking' : ''}} {{character.isNarrator ? 'hidden-actor' : ''}}"
+        wx:for="{{stageCharacters}}"
+        wx:for-item="character"
+        wx:key="id"
+      >
+        <view class="actor-avatar-wrapper">
+          <image class="actor-avatar" src="{{character.avatarUrl}}" mode="aspectFit" />
+          <view class="talking-ripple" wx:if="{{character.id === activeRoleId && isPlayingAudio}}"></view>
+        </view>
+        <text class="actor-name">{{character.name}}</text>
+        <text class="actor-role">{{character.role}}</text>
+      </view>
+    </view>
+
+    <!-- 聊天气泡记录区 -->
+    <scroll-view 
+      class="chat-scroll" 
+      scroll-y 
+      scroll-into-view="{{lastViewId}}"
+      scroll-with-animation
+    >
+      <view class="chat-flow">
+        <block wx:for="{{activeScenario.dialogues}}" wx:key="id" wx:for-index="index">
+          <view 
+            id="bubble_{{item.id}}" 
+            class="dialogue-line-container {{index <= currentTurnIndex ? 'visible-line' : 'hidden-line'}} {{item.roleId === 'P' || item.roleId === 'N' || activeScenario.characters[item.roleId].avatar === 'narrator' ? 'center-narrative' : (item.roleId === leftRoleId ? 'left-speech' : 'right-speech')}}"
+          >
+            <!-- 旁白叙事块 -->
+            <block wx:if="{{item.roleId === 'P' || item.roleId === 'N' || activeScenario.characters[item.roleId].avatar === 'narrator'}}">
+              <view 
+                class="narrative-box {{index === currentTurnIndex ? 'active-highlight' : ''}}"
+                bindtap="onTapTurn" 
+                data-index="{{index}}"
+              >
+                <view class="narrative-thai">
+                  <text class="thai-txt">{{item.thai}}</text>
+                  <image class="play-mini-icon" src="/assets/icons/volume-small.svg" />
+                </view>
+                <view class="narrative-chinese">{{item.chinese}}</view>
+              </view>
+            </block>
+            
+            <!-- 左右聊天气泡 -->
+            <block wx:else>
+              <!-- 头像 -->
+              <image 
+                class="bubble-avatar" 
+                src="{{activeScenario.characters[item.roleId].avatarUrl}}" 
+                mode="aspectFit"
+              />
+              
+              <!-- 气泡 -->
+              <view class="speech-bubble-group">
+                <view class="speaker-title">{{activeScenario.characters[item.roleId].name}}</view>
+                <view 
+                  class="speech-bubble {{index === currentTurnIndex ? 'active-highlight' : ''}} {{index === currentTurnIndex && isPlayingAudio ? 'talking-glow' : ''}}"
+                  bindtap="onTapTurn" 
+                  data-index="{{index}}"
+                >
+                  <view class="speech-thai">
+                    <text class="thai-txt">{{item.thai}}</text>
+                    <image class="play-mini-icon" src="/assets/icons/volume-small.svg" />
+                  </view>
+                  <view class="speech-chinese">{{item.chinese}}</view>
+                </view>
+              </view>
+            </block>
+          </view>
+        </block>
+      </view>
+      <view class="bottom-padding-chat"></view>
+    </scroll-view>
+
+    <!-- 底部控制面板 -->
+    <view class="player-controls">
+      <!-- 进度指示器 -->
+      <view class="progress-bar-container">
+        <view class="progress-info">
+          <text class="progress-title">{{activeScenario.title}}</text>
+          <text class="progress-steps">{{currentTurnIndex + 1}} / {{activeScenario.dialogues.length}}</text>
+        </view>
+        <view class="progress-track">
+          <view class="progress-fill" style="width: {{((currentTurnIndex + 1) / activeScenario.dialogues.length) * 100}}%"></view>
+        </view>
+      </view>
+      
+      <!-- 按钮面板 -->
+      <view class="control-buttons">
+        <button 
+          class="ctrl-btn secondary {{currentTurnIndex === 0 ? 'disabled' : ''}}" 
+          bindtap="onPrevTurn" 
+          disabled="{{currentTurnIndex === 0}}"
+        >
+          上一句
+        </button>
+        
+        <button class="ctrl-btn play-again" bindtap="onReplayTurn">
+          <image class="btn-icon" src="/assets/icons/volume.svg" />
+          <text>发音</text>
+        </button>
+        
+        <button 
+          class="ctrl-btn primary" 
+          bindtap="onNextTurn"
+        >
+          {{currentTurnIndex === activeScenario.dialogues.length - 1 ? '学完退出' : '下一句'}}
+        </button>
+      </view>
+      
+      <!-- 二级工具面板 (拆解与加入笔记本) -->
+      <view class="utility-actions">
+        <view class="util-action-btn breakdown-trigger" bindtap="onOpenBreakdown">
+          <image class="util-icon" src="/assets/icons/edit.svg" />
+          <text>词汇拆解</text>
+        </view>
+        
+        <view class="util-action-btn star-trigger" bindtap="onToggleStarSentence">
+          <!-- 我们在 settings-active.svg 类似用星号，这里使用 Emoji 或样式替代 -->
+          <text class="util-star-icon {{isSentenceStarred ? 'starred' : ''}}">★</text>
+          <text>{{isSentenceStarred ? '已存笔记' : '存笔记本'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 3. 词汇拆解滑出式半屏面板 (Bottom Sheet) -->
+  <view class="bottom-sheet-mask {{showBreakdown ? 'show' : ''}}" bindtap="onCloseBreakdown"></view>
+  <view class="bottom-sheet-content {{showBreakdown ? 'show' : ''}}">
+    <view class="sheet-header">
+      <view class="sheet-indicator"></view>
+      <view class="sheet-title-row">
+        <text class="sheet-title">泰语整句分词拆解</text>
+        <view class="sheet-close" bindtap="onCloseBreakdown">✕</view>
+      </view>
+      <!-- 当前句子预览 -->
+      <view class="sheet-sentence-preview" bindtap="onReplayTurn">
+        <text class="preview-thai">{{activeTurnText}}</text>
+        <image class="preview-play" src="/assets/icons/volume.svg" />
+      </view>
+    </view>
+    
+    <scroll-view class="sheet-scroll" scroll-y>
+      <view class="words-list">
+        <view 
+          class="word-card-item {{word.isUnknown ? 'unknown-card' : ''}}" 
+          wx:for="{{segmentedWords}}" 
+          wx:key="index"
+          bindtap="onPlayWord"
+          data-word="{{word.word}}"
+        >
+          <view class="word-card-top">
+            <text class="word-spelling">{{word.word}}</text>
+            <image class="word-play-icon" src="/assets/icons/volume-small.svg" />
+          </view>
+          
+          <view class="word-phonetic" wx:if="{{word.phonetic}}">[{{word.phonetic}}]</view>
+          <view class="word-phonetic placeholder" wx:else>[无音标]</view>
+          
+          <view class="word-meaning">{{word.meaning}}</view>
+          
+          <view class="word-actions" catchtap="noBubble">
+            <view class="word-action-tag {{word.starred ? 'starred' : ''}}" catchtap="onToggleStarWord" data-item="{{word}}">
+              {{word.starred ? '★ 已收藏' : '☆ 存生词'}}
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="sheet-tip">💡 点击词卡可单独发音；点击“存生词”可将单词存入笔记本以供闪卡复习。</view>
+      <view class="bottom-padding-sheet"></view>
+    </scroll-view>
+  </view>
+  
+</view>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="peachGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEDD5" />
+      <stop offset="100%" stop-color="#FFD8A8" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#peachGrad)" />
+  <!-- Hair -->
+  <path d="M25 50c0-15 15-22 25-22s25 7 25 22z" fill="#1F2937" />
+  <!-- Neck -->
+  <rect x="46" y="62" width="8" height="10" rx="4" fill="#F3A263" />
+  <!-- Face -->
+  <circle cx="50" cy="48" r="22" fill="#F5B07A" />
+  <!-- Eyes -->
+  <circle cx="43" cy="48" r="2.5" fill="#111827" />
+  <circle cx="57" cy="48" r="2.5" fill="#111827" />
+  <!-- Smile -->
+  <path d="M46 55q4 3 8 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round" fill="none" />
+  <!-- Flower in hair -->
+  <circle cx="70" cy="38" r="5" fill="#FFF" />
+  <circle cx="76" cy="34" r="5" fill="#FFF" />
+  <circle cx="76" cy="42" r="5" fill="#FFF" />
+  <circle cx="82" cy="38" r="5" fill="#FFF" />
+  <circle cx="76" cy="38" r="3.5" fill="#FACC15" />
+  <!-- Clothes -->
+  <path d="M30 80c5-12 11-14 20-14s15 2 20 14z" fill="#EAB308" />
+</svg>

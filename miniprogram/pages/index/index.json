@@ -3,6 +3,7 @@
     "navigation-bar": "/components/navigation-bar/navigation-bar",
     "translate-view": "/components/translate-view/translate-view",
     "import-view": "/components/import-view/import-view",
+    "scenarios-view": "/components/scenarios-view/scenarios-view",
     "review-view": "/components/review-view/review-view",
     "settings-view": "/components/settings-view/settings-view"
   }

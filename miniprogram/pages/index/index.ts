@@ -5,7 +5,7 @@ Component({
    * 页面的初始数据
    */
   data: {
-    activeTab: 'translate' as 'translate' | 'import' | 'review' | 'settings',
+    activeTab: 'translate' as 'translate' | 'import' | 'scenarios' | 'review' | 'settings',
     navTitle: '泰语翻译与拆解'
   },
 
@@ -21,7 +21,7 @@ Component({
      * 切换底部 Tab
      */
     onSwitchTab(e: any) {
-      const tab = e.currentTarget.dataset.tab as 'translate' | 'import' | 'review' | 'settings';
+      const tab = e.currentTarget.dataset.tab as 'translate' | 'import' | 'scenarios' | 'review' | 'settings';
       this.switchTabTo(tab);
     },
 
@@ -29,16 +29,18 @@ Component({
      * 来自子组件内部触发的 Tab 切换事件 (例如导入保存成功后切换到笔记本)
      */
     onSwitchTabFromComponent(e: any) {
-      const tab = e.detail.tab as 'translate' | 'import' | 'review' | 'settings';
+      const tab = e.detail.tab as 'translate' | 'import' | 'scenarios' | 'review' | 'settings';
       this.switchTabTo(tab);
     },
 
-    switchTabTo(tab: 'translate' | 'import' | 'review' | 'settings') {
+    switchTabTo(tab: 'translate' | 'import' | 'scenarios' | 'review' | 'settings') {
       if (tab === this.data.activeTab) return;
 
       let navTitle = '泰语翻译与拆解';
       if (tab === 'import') {
         navTitle = '自建泰语学习';
+      } else if (tab === 'scenarios') {
+        navTitle = '情景与经典课文';
       } else if (tab === 'review') {
         navTitle = '学习笔记本';
       } else if (tab === 'settings') {
@@ -77,6 +79,11 @@ Component({
           const comp = this.selectComponent('#settingsView');
           if (comp && typeof comp.onRefresh === 'function') {
             comp.onRefresh();
+          }
+        } else if (tab === 'scenarios') {
+          const comp = this.selectComponent('#scenariosView');
+          if (comp && typeof comp.updateTurnState === 'function') {
+            comp.updateTurnState();
           }
         }
       } catch (e) {
