@@ -457,10 +457,89 @@
   margin-bottom: 4px;
 }
 
-.speech-thai .thai-txt {
-  font-size: 16px;
+/* 泰语分词及拼音标注布局 */
+.segmented-sentence-wrap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6px 14px;
+  flex: 1;
+}
+
+.segmented-sentence-wrap.centered {
+  justify-content: center;
+}
+
+.word-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  margin: 2px 0;
+}
+
+.left-speech .word-unit:active {
+  background-color: rgba(79, 70, 229, 0.08);
+}
+
+.right-speech .word-unit:active {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.center-narrative .word-unit:active {
+  background-color: rgba(100, 116, 139, 0.1);
+}
+
+.word-phonetic-above {
+  font-size: 10px;
+  line-height: 12px;
+  color: #64748b;
+  margin-bottom: 2px;
+  text-align: center;
+  font-weight: normal;
+  min-height: 12px;
+  white-space: nowrap;
+}
+
+.right-speech .word-phonetic-above {
+  color: #60a5fa;
+}
+
+.left-speech .word-phonetic-above {
+  color: #64748b;
+}
+
+.center-narrative .word-phonetic-above {
+  color: #475569;
+}
+
+.word-text-below {
+  font-size: 17px;
+  line-height: 20px;
   font-weight: 600;
-  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.left-speech .word-text-below {
+  color: #0f172a;
+}
+
+.right-speech .word-text-below {
+  color: #1d4ed8;
+}
+
+.center-narrative .word-text-below {
+  color: #334155;
+}
+
+.unknown-word-unit .word-text-below {
+  border-bottom: 1.5px dotted rgba(239, 68, 68, 0.4);
 }
 
 .speech-chinese {

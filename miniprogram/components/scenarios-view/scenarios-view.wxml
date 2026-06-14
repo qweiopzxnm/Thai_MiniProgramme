@@ -126,8 +126,22 @@
                 bindtap="onTapTurn" 
                 data-index="{{index}}"
               >
+                <!-- 泰语分词发音拼读行 -->
                 <view class="narrative-thai">
-                  <text class="thai-txt">{{item.thai}}</text>
+                  <view class="segmented-sentence-wrap centered">
+                    <view 
+                      class="word-unit {{w.isUnknown ? 'unknown-word-unit' : ''}}" 
+                      wx:for="{{item.segmentedWords}}" 
+                      wx:for-item="w" 
+                      wx:key="index"
+                      catchtap="onPlayWordDirect"
+                      data-word="{{w.word}}"
+                      data-meaning="{{w.meaning}}"
+                    >
+                      <text class="word-phonetic-above">{{w.phonetic || ' '}}</text>
+                      <text class="word-text-below">{{w.word}}</text>
+                    </view>
+                  </view>
                   <image class="play-mini-icon" src="/assets/icons/volume-small.svg" />
                 </view>
                 <view class="narrative-chinese">{{item.chinese}}</view>
@@ -136,7 +150,7 @@
                 <view class="bubble-actions-footer" wx:if="{{index <= currentTurnIndex}}">
                   <view class="bubble-action-split" catchtap="onOpenBreakdownForIndex" data-index="{{index}}">
                     <image class="action-mini-icon" src="/assets/icons/edit.svg" />
-                    <text>查词拆解</text>
+                    <text>词义拆解</text>
                   </view>
                 </view>
               </view>
@@ -159,8 +173,22 @@
                   bindtap="onTapTurn" 
                   data-index="{{index}}"
                 >
+                  <!-- 泰语分词发音拼读行 -->
                   <view class="speech-thai">
-                    <text class="thai-txt">{{item.thai}}</text>
+                    <view class="segmented-sentence-wrap">
+                      <view 
+                        class="word-unit {{w.isUnknown ? 'unknown-word-unit' : ''}}" 
+                        wx:for="{{item.segmentedWords}}" 
+                        wx:for-item="w" 
+                        wx:key="index"
+                        catchtap="onPlayWordDirect"
+                        data-word="{{w.word}}"
+                        data-meaning="{{w.meaning}}"
+                      >
+                        <text class="word-phonetic-above">{{w.phonetic || ' '}}</text>
+                        <text class="word-text-below">{{w.word}}</text>
+                      </view>
+                    </view>
                     <image class="play-mini-icon" src="/assets/icons/volume-small.svg" />
                   </view>
                   <view class="speech-chinese">{{item.chinese}}</view>
@@ -169,7 +197,7 @@
                   <view class="bubble-actions-footer" wx:if="{{index <= currentTurnIndex}}">
                     <view class="bubble-action-split" catchtap="onOpenBreakdownForIndex" data-index="{{index}}">
                       <image class="action-mini-icon" src="/assets/icons/edit.svg" />
-                      <text>查词拆解</text>
+                      <text>词义拆解</text>
                     </view>
                   </view>
                 </view>

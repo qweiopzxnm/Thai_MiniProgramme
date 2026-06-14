@@ -132,6 +132,19 @@ Component({
       const scenario = this.data.scenarios.find(s => s.id === id);
       if (!scenario) return;
 
+      // 深度克隆 scenarios 并预先对其台词进行分词处理，使 bubble 里的分词发音能即时渲染
+      const dialoguesWithSegments = scenario.dialogues.map(turn => {
+        return {
+          ...turn,
+          segmentedWords: segmentThai(turn.thai)
+        };
+      });
+
+      const activeScenario = {
+        ...scenario,
+        dialogues: dialoguesWithSegments
+      };
+
       // 解析角色列表并映射头像 SVG
       const stageCharacters = Object.values(scenario.characters).map(c => {
         let avatarUrl = '/assets/avatars/customer.svg';
@@ -169,7 +182,7 @@ Component({
       const rightRoleId = roleIds[1] || '';
 
       this.setData({
-        activeScenario: scenario,
+        activeScenario,
         currentTurnIndex: 0,
         isPlayingAudio: false,
         stageCharacters,
@@ -182,6 +195,7 @@ Component({
         this.playCurrentTurn();
       });
     },
+
 
     /**
      * 返回列表页
@@ -495,6 +509,21 @@ Component({
       const word = e.currentTarget.dataset.word as string;
       playThaiTTS(word);
     },
+
+    /**
+     * 直接在气泡中点击单词进行发音并弹窗提示翻译
+     */
+    onPlayWordDirect(e: any) {
+      const { word, meaning } = e.currentTarget.dataset;
+      if (!word) return;
+      playThaiTTS(word);
+      wx.showToast({
+        title: `${word}: ${meaning || '点击拆解添加注释'}`,
+        icon: 'none',
+        duration: 2000
+      });
+    },
+
 
     /**
      * 收藏/取消收藏单字
