@@ -3,6 +3,68 @@
     "pages/index/index",
     "pages/logs/logs"
   ],
+  "subpackages": [
+    {
+      "root": "audio_pkg_1",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_2",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_3",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_4",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_5",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_6",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_7",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_8",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_9",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    },
+    {
+      "root": "audio_pkg_10",
+      "pages": [
+        "pages/dummy/dummy"
+      ]
+    }
+  ],
   "window": {
     "navigationBarTextStyle": "black",
     "navigationStyle": "custom"

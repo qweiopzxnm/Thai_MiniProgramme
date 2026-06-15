@@ -3,75 +3,197 @@
   
   <!-- 1. 场景/课文列表页 -->
   <view class="list-wrapper" wx:if="{{!activeScenario}}">
-    <!-- 大分类筛选器 -->
-    <view class="category-tabs">
-      <view class="category-tab {{selectedCategory === 'all' ? 'active' : ''}}" data-cat="all" bindtap="onSwitchCategory">
-        全部
+    <!-- 顶层子板块切换 (情景对话 vs 常用短语) -->
+    <view class="sub-tab-bar">
+      <view class="sub-tab-item {{activeSubTab === 'scenarios' ? 'active' : ''}}" data-tab="scenarios" bindtap="onSwitchSubTab">
+        情景课文
       </view>
-      <view class="category-tab {{selectedCategory === '生活情景' ? 'active' : ''}}" data-cat="生活情景" bindtap="onSwitchCategory">
-        日常情景
-      </view>
-      <view class="category-tab {{selectedCategory === '新闻演讲' ? 'active' : ''}}" data-cat="新闻演讲" bindtap="onSwitchCategory">
-        新闻演讲
+      <view class="sub-tab-item {{activeSubTab === 'phrases' ? 'active' : ''}}" data-tab="phrases" bindtap="onSwitchSubTab">
+        常用短语
       </view>
     </view>
 
-    <!-- 二级子分类筛选器 (仅在大分类不为 "all" 时展示) -->
-    <view class="subcategory-bar" wx:if="{{selectedCategory !== 'all'}}">
-      <view 
-        class="sub-pill {{selectedSubCategory === 'all' ? 'active' : ''}}" 
-        data-sub="all" 
-        bindtap="onSwitchSubCategory"
-      >
-        全部
+    <!-- 场景对话面板 -->
+    <block wx:if="{{activeSubTab === 'scenarios'}}">
+      <!-- 大分类筛选器 -->
+      <view class="category-tabs">
+        <view class="category-tab {{selectedCategory === 'all' ? 'active' : ''}}" data-cat="all" bindtap="onSwitchCategory">
+          全部
+        </view>
+        <view class="category-tab {{selectedCategory === '生活情景' ? 'active' : ''}}" data-cat="生活情景" bindtap="onSwitchCategory">
+          日常情景
+        </view>
+        <view class="category-tab {{selectedCategory === '新闻演讲' ? 'active' : ''}}" data-cat="新闻演讲" bindtap="onSwitchCategory">
+          新闻演讲
+        </view>
       </view>
-      
-      <block wx:if="{{selectedCategory === '生活情景'}}">
-        <view class="sub-pill {{selectedSubCategory === '日常衣食' ? 'active' : ''}}" data-sub="日常衣食" bindtap="onSwitchSubCategory">日常衣食</view>
-        <view class="sub-pill {{selectedSubCategory === '出行旅游' ? 'active' : ''}}" data-sub="出行旅游" bindtap="onSwitchSubCategory">出行旅游</view>
-        <view class="sub-pill {{selectedSubCategory === '职场商务' ? 'active' : ''}}" data-sub="职场商务" bindtap="onSwitchSubCategory">职场商务</view>
-        <view class="sub-pill {{selectedSubCategory === '生活求助' ? 'active' : ''}}" data-sub="生活求助" bindtap="onSwitchSubCategory">生活求助</view>
-      </block>
-      
-      <block wx:if="{{selectedCategory === '新闻演讲'}}">
-        <view class="sub-pill {{selectedSubCategory === '新闻资讯' ? 'active' : ''}}" data-sub="新闻资讯" bindtap="onSwitchSubCategory">新闻资讯</view>
-        <view class="sub-pill {{selectedSubCategory === '主题演讲' ? 'active' : ''}}" data-sub="主题演讲" bindtap="onSwitchSubCategory">主题演讲</view>
-      </block>
-    </view>
 
-    <!-- 列表内容 -->
-    <scroll-view class="list-scroll" scroll-y>
-      <view class="cards-grid">
+      <!-- 二级子分类筛选器 (仅在大分类不为 "all" 时展示) -->
+      <view class="subcategory-bar" wx:if="{{selectedCategory !== 'all'}}">
         <view 
-          class="scenario-card" 
-          wx:for="{{filteredScenarios}}" 
-          wx:key="id" 
-          bindtap="onSelectScenario" 
-          data-id="{{item.id}}"
+          class="sub-pill {{selectedSubCategory === 'all' ? 'active' : ''}}" 
+          data-sub="all" 
+          bindtap="onSwitchSubCategory"
         >
-          <view class="card-header">
-            <text class="category-badge {{item.category === '新闻演讲' ? 'classic' : 'daily'}}">{{item.category === '新闻演讲' ? '新闻演讲' : '日常情景'}}</text>
-            <text class="difficulty-badge {{item.difficulty === '初级' ? 'easy' : (item.difficulty === '中级' ? 'medium' : 'hard')}}">{{item.difficulty}}</text>
+          全部
+        </view>
+        
+        <block wx:if="{{selectedCategory === '生活情景'}}">
+          <view class="sub-pill {{selectedSubCategory === '日常衣食' ? 'active' : ''}}" data-sub="日常衣食" bindtap="onSwitchSubCategory">日常衣食</view>
+          <view class="sub-pill {{selectedSubCategory === '出行旅游' ? 'active' : ''}}" data-sub="出行旅游" bindtap="onSwitchSubCategory">出行旅游</view>
+          <view class="sub-pill {{selectedSubCategory === '职场商务' ? 'active' : ''}}" data-sub="职场商务" bindtap="onSwitchSubCategory">职场商务</view>
+          <view class="sub-pill {{selectedSubCategory === '生活求助' ? 'active' : ''}}" data-sub="生活求助" bindtap="onSwitchSubCategory">生活求助</view>
+        </block>
+        
+        <block wx:if="{{selectedCategory === '新闻演讲'}}">
+          <view class="sub-pill {{selectedSubCategory === '新闻资讯' ? 'active' : ''}}" data-sub="新闻资讯" bindtap="onSwitchSubCategory">新闻资讯</view>
+          <view class="sub-pill {{selectedSubCategory === '主题演讲' ? 'active' : ''}}" data-sub="主题演讲" bindtap="onSwitchSubCategory">主题演讲</view>
+        </block>
+      </view>
+
+      <!-- 状态与难度多维筛选栏 -->
+      <view class="filter-panel">
+        <!-- 学习状态筛选 -->
+        <view class="filter-row">
+          <text class="filter-label">学习进度</text>
+          <view class="filter-pills">
+            <view class="filter-pill {{selectedStatus === 'all' ? 'active' : ''}}" data-status="all" bindtap="onSwitchStatus">
+              全部 ({{stats.total}})
+            </view>
+            <view class="filter-pill {{selectedStatus === 'unlearned' ? 'active' : ''}}" data-status="unlearned" bindtap="onSwitchStatus">
+              未学习 ({{stats.unlearned}})
+            </view>
+            <view class="filter-pill {{selectedStatus === 'learned' ? 'active' : ''}}" data-status="learned" bindtap="onSwitchStatus">
+              已学习 ({{stats.learned}})
+            </view>
           </view>
-          
-          <view class="card-title">{{item.title}}</view>
-          <view class="card-desc">{{item.description}}</view>
-          
-          <view class="card-footer">
-            <text class="turns-count">共 {{item.dialogues.length}} 句对话/段落</text>
-            <view class="start-btn">
-              <text>进入学习</text>
-              <text class="arrow">➔</text>
+        </view>
+
+        <!-- 难度筛选 -->
+        <view class="filter-row">
+          <text class="filter-label">课文难度</text>
+          <view class="filter-pills">
+            <view class="filter-pill {{selectedDifficulty === 'all' ? 'active' : ''}}" data-difficulty="all" bindtap="onSwitchDifficulty">
+              全部
+            </view>
+            <view class="filter-pill {{selectedDifficulty === '初级' ? 'active' : ''}}" data-difficulty="初级" bindtap="onSwitchDifficulty">
+              初级
+            </view>
+            <view class="filter-pill {{selectedDifficulty === '中级' ? 'active' : ''}}" data-difficulty="中级" bindtap="onSwitchDifficulty">
+              中级
+            </view>
+            <view class="filter-pill {{selectedDifficulty === '高级' ? 'active' : ''}}" data-difficulty="高级" bindtap="onSwitchDifficulty">
+              高级
             </view>
           </view>
         </view>
       </view>
-      
-      <view class="empty-tip" wx:if="{{filteredScenarios.length === 0}}">
-        暂无该分类的场景或演讲新闻
+
+      <!-- 列表内容 -->
+      <scroll-view class="list-scroll" scroll-y bindscrolltolower="onLoadMore">
+        <view class="cards-grid">
+          <view 
+            class="scenario-card" 
+            wx:for="{{filteredScenarios}}" 
+            wx:key="id" 
+            bindtap="onSelectScenario" 
+            data-id="{{item.id}}"
+          >
+            <view class="card-header">
+              <view class="header-left">
+                <text class="category-badge {{item.category === '新闻演讲' ? 'classic' : 'daily'}}">{{item.category === '新闻演讲' ? '新闻演讲' : '日常情景'}}</text>
+                <text class="difficulty-badge {{item.difficulty === '初级' ? 'easy' : (item.difficulty === '中级' ? 'medium' : 'hard')}}">{{item.difficulty}}</text>
+              </view>
+              <view class="learned-status" wx:if="{{item.isLearned}}">
+                <icon class="learned-icon" type="success" size="12" color="#10B981" />
+                <text class="learned-text">已学习</text>
+              </view>
+            </view>
+            
+            <view class="card-title">{{item.title}}</view>
+            <view class="card-desc">{{item.description}}</view>
+            
+            <view class="card-footer">
+              <text class="turns-count">共 {{item.dialogues.length}} 句对话/段落</text>
+              <view class="start-btn">
+                <text>进入学习</text>
+                <text class="arrow">➔</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        
+        <view class="empty-tip" wx:if="{{filteredScenarios.length === 0}}">
+          暂无该分类的场景或演讲新闻
+        </view>
+
+        <!-- 分页加载状态提示 -->
+        <view class="load-more-tip" wx:if="{{filteredScenarios.length > 0}}">
+          <text>{{hasMore ? '下滑加载更多场景...' : '已加载全部场景 (共 ' + allFilteredScenarios.length + ' 个)'}}</text>
+        </view>
+        
+        <view class="bottom-padding"></view>
+      </scroll-view>
+    </block>
+
+    <!-- 常用短语面板 -->
+    <block wx:if="{{activeSubTab === 'phrases'}}">
+      <!-- 短语大类筛选器 -->
+      <view class="phrase-category-bar">
+        <view 
+          class="phrase-sub-pill {{selectedPhraseCategory === 'all' ? 'active' : ''}}" 
+          data-cat="all" 
+          bindtap="onSwitchPhraseCategory"
+        >
+          全部
+        </view>
+        <view 
+          class="phrase-sub-pill {{selectedPhraseCategory === category.id ? 'active' : ''}}" 
+          wx:for="{{phraseCategories}}" 
+          wx:key="id"
+          wx:for-item="category"
+          data-cat="{{category.id}}" 
+          bindtap="onSwitchPhraseCategory"
+        >
+          {{category.name}}
+        </view>
       </view>
-      <view class="bottom-padding"></view>
-    </scroll-view>
+
+      <scroll-view class="phrases-scroll" scroll-y bindscrolltolower="onLoadMorePhrases">
+        <view class="phrases-grid">
+          <block wx:for="{{phrasesData}}" wx:key="id" wx:for-item="category">
+            <block wx:if="{{selectedPhraseCategory === 'all' || selectedPhraseCategory === category.id}}">
+              <!-- 分类标头 -->
+              <view class="phrase-section-header">
+                <text class="section-title-text">{{category.name}}</text>
+                <text class="section-count-text">({{category.items.length}} 个词/短语)</text>
+              </view>
+              
+              <view class="phrase-cards-row">
+                <view 
+                  class="phrase-card" 
+                  wx:for="{{category.items}}" 
+                  wx:key="id" 
+                  wx:for-item="phrase"
+                  bindtap="onPlayPhrase"
+                  data-thai="{{phrase.thai}}"
+                >
+                  <view class="phrase-card-main">
+                    <text class="phrase-thai">{{phrase.thai}}</text>
+                    <text class="phrase-phonetic">{{phrase.phonetic}}</text>
+                    <text class="phrase-chinese">{{phrase.chinese}}</text>
+                  </view>
+                  <view class="phrase-play-icon">
+                    <text class="speaker-icon">🔊</text>
+                  </view>
+                </view>
+              </view>
+            </block>
+          </block>
+        </view>
+        <view class="bottom-padding"></view>
+      </scroll-view>
+    </block>
   </view>
 
   <!-- 2. 交互式剧场播放页 -->

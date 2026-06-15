@@ -5,8 +5,8 @@ Component({
    * 页面的初始数据
    */
   data: {
-    activeTab: 'translate' as 'translate' | 'import' | 'scenarios' | 'review' | 'settings',
-    navTitle: '泰语翻译与拆解'
+    activeTab: 'scenarios' as 'translate' | 'import' | 'scenarios' | 'review' | 'settings',
+    navTitle: '情景与经典课文'
   },
 
   /**

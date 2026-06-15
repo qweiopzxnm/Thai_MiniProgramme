@@ -15,7 +15,6 @@ Component({
     config: {} as AppConfig,
     baiduAppId: '',
     baiduApiKey: '',
-    audioBaseUrl: '',
     customWords: [] as UserDictWord[]
   },
 
@@ -52,7 +51,6 @@ Component({
         config,
         baiduAppId: config.baiduAppId,
         baiduApiKey: config.baiduApiKey,
-        audioBaseUrl: config.audioBaseUrl || '',
         customWords: customWordsList
       });
     },
@@ -124,24 +122,7 @@ Component({
       });
     },
 
-    onInputAudioBaseUrl(e: any) {
-      this.setData({
-        audioBaseUrl: e.detail.value
-      });
-    },
 
-    onSaveAudioUrl() {
-      const { audioBaseUrl } = this.data;
-      setConfig({
-        audioBaseUrl: audioBaseUrl.trim()
-      });
-      this.loadSettings();
-
-      wx.showToast({
-        title: '托管地址保存成功',
-        icon: 'success'
-      });
-    },
 
     /**
      * 删除单条自定义单词

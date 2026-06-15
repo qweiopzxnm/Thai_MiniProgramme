@@ -34,7 +34,7 @@
     <!-- Notebook Cards -->
     <scroll-view class="history-scroll" scroll-y type="list" wx:else>
       <view 
-        class="history-card card {{expandedId === item.id ? 'expanded' : ''}}" 
+        class="history-card card {{item.source === 'scenario' ? 'scenario' : ''}} {{expandedId === item.id ? 'expanded' : ''}}" 
         wx:for="{{filteredHistory}}" 
         wx:key="id"
         data-id="{{item.id}}"
@@ -42,8 +42,12 @@
       >
         <view class="card-header">
           <view class="header-left">
-            <text class="chinese-title">{{item.chinese}}</text>
-            <text class="time-label">{{item.formattedTime}}</text>
+            <view class="title-row">
+              <text class="scenario-badge" wx:if="{{item.source === 'scenario'}}">情景</text>
+              <text class="chinese-title">{{item.chinese}}</text>
+            </view>
+            <text class="time-label" wx:if="{{item.source !== 'scenario'}}">{{item.formattedTime}}</text>
+            <text class="time-label scenario-title-label" wx:else>{{item.scenarioTitle}}</text>
           </view>
           <view class="header-right">
             <!-- Star Button -->
@@ -155,6 +159,9 @@
         <view class="flashcard-inner {{isFlipped ? 'is-flipped' : ''}}">
           <!-- Card Front (Chinese or Thai) -->
           <view class="card-side card-front">
+            <view class="card-badge" wx:if="{{currentCard.source === 'scenario'}}">
+              情景: {{currentCard.scenarioTitle}}
+            </view>
             <view class="front-content">
               <block wx:if="{{cardLanguageMode === 'zh'}}">
                 <text class="card-chinese">{{currentCard.chinese}}</text>
@@ -173,6 +180,9 @@
 
           <!-- Card Back (Thai Breakdown) -->
           <view class="card-side card-back" catchtap="preventBubble">
+            <view class="card-badge" wx:if="{{currentCard.source === 'scenario'}}">
+              情景: {{currentCard.scenarioTitle}}
+            </view>
             <scroll-view class="back-scroll" scroll-y>
               <view class="back-header">
                 <text class="back-chinese-preview">{{currentCard.chinese}}</text>

@@ -1,5 +1,6 @@
 // utils/tts.ts
 import { getConfig } from './config';
+import { staticHashes } from './static_hashes';
 
 let ctxA: WechatMiniprogram.InnerAudioContext | null = null;
 let ctxB: WechatMiniprogram.InnerAudioContext | null = null;
@@ -453,6 +454,16 @@ function isAudioCached(localPath: string): boolean {
   }
 }
 
+export function getStaticAudioPath(text: string): string {
+  const hash = getSafeHash(text);
+  if (staticHashes.has(hash)) {
+    // 使用大数取模将哈希非常均匀地分流到 10 个包中
+    const pkgNum = (parseInt(hash.substring(0, 6), 16) % 10) + 1;
+    return `/audio_pkg_${pkgNum}/${hash}.mp3`;
+  }
+  return '';
+}
+
 /**
  * 异步下载并缓存 Google TTS 音频文件
  */
@@ -460,23 +471,20 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
   const cleanText = text.trim();
   if (!cleanText) return Promise.reject('Empty text');
 
+  // 1. 优先检查静态分包路径
+  const staticPath = getStaticAudioPath(cleanText);
+  if (staticPath) {
+    return Promise.resolve(staticPath);
+  }
+
+  // 2. 其次检查本地持久化沙盒缓存
   const localPath = getLocalAudioPath(cleanText);
   if (isAudioCached(localPath)) {
     return Promise.resolve(localPath);
   }
 
   return new Promise((resolve, reject) => {
-    const config = getConfig();
-    let downloadUrl = '';
-    
-    // 如果配置了自定义音频基地址，则从自定义服务器下载 pre-downloaded Google TTS MP3
-    if (config.audioBaseUrl) {
-      const hash = getSafeHash(cleanText);
-      downloadUrl = `${config.audioBaseUrl.replace(/\/$/, '')}/${hash}.mp3`;
-    } else {
-      // 否则直连谷歌 TTS 接口
-      downloadUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
-    }
+    const downloadUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
 
     wx.downloadFile({
       url: downloadUrl,
@@ -529,60 +537,66 @@ export function playThaiTTS(
       return;
     }
 
-    // A. 如果用户开启了 Google 高级发音通道，优先使用 Google TTS (带本地缓存)
+    const { ctxA } = getAudioContexts();
+    globalOnEnded = onEnded || null;
+    const adjustedRate = Math.min(2.0, rate);
+
+    const playAudio = (src: string) => {
+      ctxA.offPlay();
+      ctxA.offCanplay();
+      ctxA.offEnded();
+      ctxA.offError();
+
+      ctxA.onPlay(() => {
+        ctxA.playbackRate = adjustedRate;
+        if (onStart) {
+          try {
+            onStart();
+          } catch (e) {
+            console.error('onStart callback error:', e);
+          }
+        }
+      });
+
+      ctxA.onCanplay(() => {
+        ctxA.playbackRate = adjustedRate;
+      });
+
+      ctxA.onEnded(() => {
+        const cb = globalOnEnded;
+        stopThaiTTS();
+        if (cb) {
+          try {
+            cb();
+          } catch (e) {
+            console.error('onEnded callback error:', e);
+          }
+        }
+      });
+
+      ctxA.onError((err) => {
+        console.warn(`Google TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
+        playViaYoudao(cleanText, rate, undefined, onEnded);
+      });
+
+      playTimeoutId = setTimeout(() => {
+        ctxA.src = src;
+        ctxA.playbackRate = adjustedRate;
+        ctxA.play();
+        playTimeoutId = null;
+      }, 100) as unknown as number;
+    };
+
+    // 1. 【核心优化】：只要静态分包中有预置音频，无论是否开启 Google 通道都直接播放（完全秒开、无需联网）
+    const staticPath = getStaticAudioPath(cleanText);
+    if (staticPath) {
+      playAudio(staticPath);
+      return;
+    }
+
+    // 2. 如果是生词，且用户开启了 Google 通道，去尝试下载/播放缓存
     if (config.useGoogleTTS) {
-      const { ctxA } = getAudioContexts();
-      globalOnEnded = onEnded || null;
-
       const localPath = getLocalAudioPath(cleanText);
-      const adjustedRate = Math.min(2.0, rate);
-
-      const playAudio = (src: string) => {
-        ctxA.offPlay();
-        ctxA.offCanplay();
-        ctxA.offEnded();
-        ctxA.offError();
-
-        ctxA.onPlay(() => {
-          ctxA.playbackRate = adjustedRate;
-          if (onStart) {
-            try {
-              onStart();
-            } catch (e) {
-              console.error('onStart callback error:', e);
-            }
-          }
-        });
-
-        ctxA.onCanplay(() => {
-          ctxA.playbackRate = adjustedRate;
-        });
-
-        ctxA.onEnded(() => {
-          const cb = globalOnEnded;
-          stopThaiTTS();
-          if (cb) {
-            try {
-              cb();
-            } catch (e) {
-              console.error('onEnded callback error:', e);
-            }
-          }
-        });
-
-        ctxA.onError((err) => {
-          console.warn(`Google TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
-          playViaYoudao(cleanText, rate, undefined, onEnded);
-        });
-
-        playTimeoutId = setTimeout(() => {
-          ctxA.src = src;
-          ctxA.playbackRate = adjustedRate;
-          ctxA.play();
-          playTimeoutId = null;
-        }, 100) as unknown as number;
-      };
-
       if (isAudioCached(localPath)) {
         playAudio(localPath);
       } else {
@@ -599,7 +613,7 @@ export function playThaiTTS(
       return;
     }
 
-    // B. 默认直接使用有道本地自愈发音方案
+    // 3. 默认回退使用有道发音方案
     playViaYoudao(cleanText, rate, onStart, onEnded);
 
   } catch (e) {

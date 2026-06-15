@@ -17,6 +17,8 @@ export interface TranslationItem {
   mastered: boolean;
   wrongCount: number;
   reviewCount: number;
+  source?: 'translator' | 'scenario';
+  scenarioTitle?: string;
 }
 
 export interface UserDictWord {

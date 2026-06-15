@@ -1,5 +1,152 @@
 /* components/scenarios-view/scenarios-view.less */
 
+/* 顶层板块切换 */
+.sub-tab-bar {
+  display: flex;
+  background: #e2e8f0;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 12px;
+  gap: 4px;
+}
+
+.sub-tab-item {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 8px 0;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.sub-tab-item.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 短语页面样式 */
+.phrase-category-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.phrase-sub-pill {
+  font-size: 11px;
+  color: #64748b;
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-weight: 600;
+  border: 1rpx solid #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.phrase-sub-pill.active {
+  color: #ffffff;
+  background: #0f172a;
+  border-color: #0f172a;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.phrases-scroll {
+  flex: 1;
+  height: 0;
+}
+
+.phrases-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.phrase-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  border-left: 6rpx solid #4f46e5;
+  padding-left: 8px;
+}
+
+.section-title-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.section-count-text {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.phrase-cards-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.phrase-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.015);
+  border: 1rpx solid #f1f5f9;
+  transition: all 0.2s ease;
+  &:active {
+    transform: scale(0.97);
+    background: #f8fafc;
+  }
+}
+
+.phrase-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.phrase-thai {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.phrase-phonetic {
+  font-size: 10px;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+.phrase-chinese {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.phrase-play-icon {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+
+.speaker-icon {
+  font-size: 12px;
+}
+
 .scenarios-container {
   width: 100%;
   height: 100%;
@@ -45,6 +192,61 @@
   color: #4f46e5;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
+
+/* 多维筛选栏样式 */
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.filter-pill {
+  font-size: 11px;
+  color: #4b5563;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.filter-pill.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);
+}
+
 
 /* 二级子分类药丸样式 */
 .subcategory-bar {
@@ -112,6 +314,27 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.header-left {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.learned-status {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #f0fdf4;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.learned-text {
+  font-size: 10px;
+  color: #16a34a;
+  font-weight: 600;
 }
 
 .category-badge {
@@ -202,6 +425,13 @@
   color: #94a3b8;
   font-size: 14px;
   padding: 40px 0;
+}
+
+.load-more-tip {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 16px 0;
 }
 
 .bottom-padding {

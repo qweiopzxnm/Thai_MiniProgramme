@@ -77,24 +77,9 @@
     <view class="settings-row google-tts-row">
       <view class="row-left">
         <text class="row-label">启用 Google 高级发音通道</text>
-        <view class="row-desc">开启后，系统将使用高质量的 Google TTS 发音，并自动在后台将音频下载并缓存到本地以支持离线播放。若在国内，可配合配置下方私有托管地址以获得秒开体验。</view>
+        <view class="row-desc">开启后，系统将使用高质量的 Google TTS 发音。场景对话的音频已完全内置于本地静态分包中，国内用户无需联网即可离线发音，不消耗任何流量且实现秒开播放。</view>
       </view>
       <switch checked="{{config.useGoogleTTS}}" bindchange="onToggleGoogleTTS" color="#10B981" />
-    </view>
-
-    <!-- 音频托管地址配置 (仅当开启 Google TTS 时展示) -->
-    <view class="tts-server-config" wx:if="{{config.useGoogleTTS}}">
-      <view class="form-item">
-        <text class="form-label">离线音频托管服务器地址 (选填)</text>
-        <view class="form-desc-small">如果您在国内且无法直连 Google，可将我们预下载的 1,980 个场景音频文件上传到您的国内服务器/云存储（腾讯云 COS/阿里云 OSS），并在下方填入地址（例如: https://my-bucket.cos.ap-shanghai.myqcloud.com/tts/），即可获得极速且稳定的 Google 发音体验。</view>
-        <input 
-          class="form-input" 
-          placeholder="请输入以 http(s):// 开头的基地址" 
-          value="{{audioBaseUrl}}" 
-          bindinput="onInputAudioBaseUrl" 
-        />
-      </view>
-      <button class="btn btn-primary save-audio-btn" bindtap="onSaveAudioUrl">保存地址</button>
     </view>
   </view>
 

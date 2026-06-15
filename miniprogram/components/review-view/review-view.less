@@ -755,3 +755,50 @@
     box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
   }
 }
+
+/* Scenario Cards specific styling */
+.history-card.scenario {
+  border-left-color: #10b981; /* Emerald green */
+}
+
+.history-card.scenario.expanded {
+  border-left-color: #059669;
+}
+
+.title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.scenario-badge {
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
+  background: #10b981;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.scenario-title-label {
+  color: #10b981 !important;
+  font-weight: 500;
+}
+
+.card-badge {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  font-size: 11px;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: 0.5px solid #a7f3d0;
+  z-index: 10;
+}

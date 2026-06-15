@@ -1,0 +1,16 @@
+node_modules/
+google_tts_audio/
+scratch/
+.gemini/
+*.log
+miniprogram/audio_pkg_1/
+miniprogram/audio_pkg_2/
+miniprogram/audio_pkg_3/
+miniprogram/audio_pkg_4/
+miniprogram/audio_pkg_5/
+miniprogram/audio_pkg_6/
+miniprogram/audio_pkg_7/
+miniprogram/audio_pkg_8/
+miniprogram/audio_pkg_9/
+miniprogram/audio_pkg_10/
+miniprogram/pages/dummy/

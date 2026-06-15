@@ -1,6 +1,8 @@
 // components/review-view/review-view.ts
 import { getHistory, deleteHistoryItem, saveHistoryItem, TranslationItem } from '../../utils/db';
 import { playThaiTTS, stopThaiTTS } from '../../utils/tts';
+import { SCENARIOS } from '../../utils/scenarios';
+import { segmentThai } from '../../utils/segment';
 
 Component({
   /**
@@ -57,12 +59,67 @@ Component({
     },
 
     /**
+     * 合并翻译历史和已学习情景对话的数据视图
+     */
+    getMergedList(): TranslationItem[] {
+      const translatorList = getHistory().map(item => ({
+        ...item,
+        source: 'translator' as const
+      }));
+      
+      const learnedList: string[] = wx.getStorageSync('learned_scenarios') || [];
+      const scenarioStates = wx.getStorageSync('scenario_card_states') || {};
+      const scenarioItems: TranslationItem[] = [];
+      
+      for (const scenarioId of learnedList) {
+        const scenario = SCENARIOS.find(s => s.id === scenarioId);
+        if (!scenario) continue;
+        
+        for (const turn of scenario.dialogues) {
+          const state = scenarioStates[turn.id] || {};
+          if (state.hidden) continue;
+          
+          const words = segmentThai(turn.thai).map(w => ({
+            word: w.word,
+            meaning: w.meaning,
+            phonetic: w.phonetic,
+            isCustom: w.isCustom
+          }));
+          
+          scenarioItems.push({
+            id: turn.id,
+            thai: turn.thai,
+            chinese: turn.chinese,
+            words: words,
+            createdAt: 0, // scenarios don't have natural timestamps
+            starred: !!state.starred,
+            mastered: !!state.mastered,
+            wrongCount: state.wrongCount || 0,
+            reviewCount: state.reviewCount || 0,
+            source: 'scenario',
+            scenarioTitle: scenario.title
+          });
+        }
+      }
+      
+      // 排序：翻译记录（最新靠前），情景卡片排在底部
+      const sortedTranslator = [...translatorList].sort((a, b) => b.createdAt - a.createdAt);
+      return [...sortedTranslator, ...scenarioItems];
+    },
+
+    /**
      * 加载本地学习历史记录
      */
     loadHistory() {
-      const list = getHistory();
+      const list = this.getMergedList();
       // 格式化时间显示
       const formattedList = list.map(item => {
+        if (item.createdAt === 0) {
+          return {
+            ...item,
+            formattedTime: '情景学习'
+          };
+        }
         const date = new Date(item.createdAt);
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -145,7 +202,15 @@ Component({
       if (index > -1) {
         const item = list[index];
         item.starred = !item.starred;
-        saveHistoryItem(item);
+        
+        if (item.source === 'scenario') {
+          const scenarioStates = wx.getStorageSync('scenario_card_states') || {};
+          if (!scenarioStates[id]) scenarioStates[id] = {};
+          scenarioStates[id].starred = item.starred;
+          wx.setStorageSync('scenario_card_states', scenarioStates);
+        } else {
+          saveHistoryItem(item);
+        }
         
         this.setData({
           historyList: list
@@ -160,13 +225,24 @@ Component({
      */
     onDeleteHistory(e: any) {
       const id = e.currentTarget.dataset.id;
+      const list = [...this.data.historyList];
+      const index = list.findIndex(h => h.id === id);
+      if (index === -1) return;
+      const item = list[index];
       
       wx.showModal({
         title: '删除记录',
         content: '确定要从笔记本中删除此条记录吗？',
         success: (res) => {
           if (res.confirm) {
-            deleteHistoryItem(id);
+            if (item.source === 'scenario') {
+              const scenarioStates = wx.getStorageSync('scenario_card_states') || {};
+              if (!scenarioStates[id]) scenarioStates[id] = {};
+              scenarioStates[id].hidden = true;
+              wx.setStorageSync('scenario_card_states', scenarioStates);
+            } else {
+              deleteHistoryItem(id);
+            }
             this.loadHistory();
             this.triggerEvent('historychange');
             
@@ -221,7 +297,7 @@ Component({
      * 初始化闪卡复习
      */
     initReview() {
-      const list = getHistory();
+      const list = this.getMergedList();
       
       if (list.length === 0) {
         this.setData({
@@ -277,8 +353,18 @@ Component({
           card.mastered = false; // 重新标记为未掌握
           this.setData({ scoreForgot: this.data.scoreForgot + 1 });
         }
-        // 更新本地数据库中该卡的复习次数和状态
-        saveHistoryItem(card);
+        
+        if (card.source === 'scenario') {
+          const scenarioStates = wx.getStorageSync('scenario_card_states') || {};
+          if (!scenarioStates[card.id]) scenarioStates[card.id] = {};
+          scenarioStates[card.id].reviewCount = card.reviewCount;
+          scenarioStates[card.id].wrongCount = card.wrongCount;
+          scenarioStates[card.id].mastered = card.mastered;
+          wx.setStorageSync('scenario_card_states', scenarioStates);
+        } else {
+          // 更新本地数据库中该卡的复习次数和状态
+          saveHistoryItem(card);
+        }
       }
 
       // 先翻转回正面，增加过渡感
