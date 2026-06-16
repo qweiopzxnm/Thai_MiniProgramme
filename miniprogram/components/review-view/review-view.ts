@@ -79,18 +79,11 @@ Component({
           const state = scenarioStates[turn.id] || {};
           if (state.hidden) continue;
           
-          const words = segmentThai(turn.thai).map(w => ({
-            word: w.word,
-            meaning: w.meaning,
-            phonetic: w.phonetic,
-            isCustom: w.isCustom
-          }));
-          
           scenarioItems.push({
             id: turn.id,
             thai: turn.thai,
             chinese: turn.chinese,
-            words: words,
+            words: [], // 懒加载：在展开或闪卡切换到该词时再动态分词，极大提升笔记本切换的渲染速度
             createdAt: 0, // scenarios don't have natural timestamps
             starred: !!state.starred,
             mastered: !!state.mastered,
@@ -185,6 +178,28 @@ Component({
      */
     onToggleExpand(e: any) {
       const id = e.currentTarget.dataset.id;
+      const isExpanding = this.data.expandedId !== id;
+
+      if (isExpanding) {
+        // 查找该项，如果 words 为空，说明是情景卡片且未初始化分词，进行动态懒分词加载
+        const list = [...this.data.historyList];
+        const index = list.findIndex(h => h.id === id);
+        if (index > -1 && list[index].words.length === 0) {
+          const item = list[index];
+          item.words = segmentThai(item.thai).map(w => ({
+            word: w.word,
+            meaning: w.meaning,
+            phonetic: w.phonetic,
+            isCustom: w.isCustom
+          }));
+          this.setData({
+            historyList: list
+          }, () => {
+            this.applyFilter();
+          });
+        }
+      }
+
       this.setData({
         expandedId: this.data.expandedId === id ? '' : id
       });
@@ -311,11 +326,22 @@ Component({
       // 洗牌算法乱序卡片
       const shuffled = [...list].sort(() => Math.random() - 0.5);
 
+      // 对乱序后的第一张卡片执行动态分词初始化
+      const firstCard = shuffled[0];
+      if (firstCard && firstCard.words.length === 0) {
+        firstCard.words = segmentThai(firstCard.thai).map(w => ({
+          word: w.word,
+          meaning: w.meaning,
+          phonetic: w.phonetic,
+          isCustom: w.isCustom
+        }));
+      }
+
       this.setData({
         cardList: shuffled,
         currentIndex: 0,
         isFlipped: false,
-        currentCard: shuffled[0],
+        currentCard: firstCard || null,
         reviewFinished: false,
         scoreRemember: 0,
         scoreForgot: 0
@@ -374,9 +400,19 @@ Component({
       setTimeout(() => {
         const nextIndex = this.data.currentIndex + 1;
         if (nextIndex < this.data.cardList.length) {
+          const nextCard = this.data.cardList[nextIndex];
+          // 预载下一张卡片的分词拆解，以防止切卡动画卡顿
+          if (nextCard.words.length === 0) {
+            nextCard.words = segmentThai(nextCard.thai).map(w => ({
+              word: w.word,
+              meaning: w.meaning,
+              phonetic: w.phonetic,
+              isCustom: w.isCustom
+            }));
+          }
           this.setData({
             currentIndex: nextIndex,
-            currentCard: this.data.cardList[nextIndex]
+            currentCard: nextCard
           });
         } else {
           this.setData({

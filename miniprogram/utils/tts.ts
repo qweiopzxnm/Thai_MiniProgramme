@@ -2,6 +2,23 @@
 import { getConfig } from './config';
 import { staticHashes } from './static_hashes';
 
+/**
+ * 校准倍速数值，强制符合微信小程序 InnerAudioContext 官方仅支持的 0.5, 0.8, 1.0, 1.25, 1.5, 2.0 规格
+ */
+export function getSupportedPlaybackRate(rate: number): number {
+  const supportedRates = [0.5, 0.8, 1.0, 1.25, 1.5, 2.0];
+  let closest = supportedRates[0];
+  let minDiff = Math.abs(rate - closest);
+  for (let i = 1; i < supportedRates.length; i++) {
+    const diff = Math.abs(rate - supportedRates[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = supportedRates[i];
+    }
+  }
+  return closest;
+}
+
 let ctxA: WechatMiniprogram.InnerAudioContext | null = null;
 let ctxB: WechatMiniprogram.InnerAudioContext | null = null;
 let playTimeoutId: number | null = null;
@@ -206,8 +223,8 @@ function playNextInQueueDouble(rate: number): void {
     currentCtx.src = youdaoSrc;
   }
 
-  // 微信 InnerAudioContext.playbackRate 的有效范围是 0.5 - 2.0，超出范围的值会被忽略或重置。必须强制限制最大值为 2.0。
-  const adjustedRate = Math.min(2.0, rate * YOUDAO_RATE_MULTIPLIER);
+  // 微信 InnerAudioContext.playbackRate 仅支持 0.5, 0.8, 1.0, 1.25, 1.5, 2.0 规格。
+  const adjustedRate = getSupportedPlaybackRate(rate * YOUDAO_RATE_MULTIPLIER);
 
   // 在 play() 之前和各个生命周期中强制写入倍速，防范微信重新加载 src 时重置倍速的问题
   currentCtx.playbackRate = adjustedRate;
@@ -357,7 +374,7 @@ function playViaYoudao(
   ctxA.offEnded();
   ctxA.offError();
 
-  const adjustedRate = Math.min(2.0, rate);
+  const adjustedRate = getSupportedPlaybackRate(rate);
 
   ctxA.onPlay(() => {
     ctxA.playbackRate = adjustedRate;
@@ -466,40 +483,23 @@ export function getStaticAudioPath(text: string): string {
 }
 
 /**
- * 异步下载并缓存 Google TTS 音频文件
+ * 辅助下载函数，将音频文件下载并保存到本地持久化沙盒路径中
  */
-export function preFetchGoogleTTS(text: string): Promise<string> {
-  const cleanText = text.trim();
-  if (!cleanText) return Promise.reject('Empty text');
-
-  // 1. 优先检查静态分包路径
-  const staticPath = getStaticAudioPath(cleanText);
-  if (staticPath) {
-    return Promise.resolve(staticPath);
-  }
-
-  // 2. 其次检查本地持久化沙盒缓存
-  const localPath = getLocalAudioPath(cleanText);
-  if (isAudioCached(localPath)) {
-    return Promise.resolve(localPath);
-  }
-
+function downloadAndSaveAudio(url: string, localPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const downloadUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
-
     wx.downloadFile({
-      url: downloadUrl,
+      url: url,
       success: (res) => {
         if (res.statusCode === 200) {
           fs.saveFile({
             tempFilePath: res.tempFilePath,
             filePath: localPath,
             success: () => {
-              console.log('Cached Google TTS successfully:', cleanText);
+              console.log('Cached audio successfully from:', url);
               resolve(localPath);
             },
             fail: (err) => {
-              console.error('Failed to save cached TTS file:', err);
+              console.error('Failed to save cached audio file:', err);
               resolve(res.tempFilePath);
             }
           });
@@ -512,6 +512,33 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
       }
     });
   });
+}
+
+/**
+ * 异步下载并缓存 Google TTS / Gitee 远程音频文件
+ */
+export function preFetchGoogleTTS(text: string): Promise<string> {
+  const cleanText = text.trim();
+  if (!cleanText) return Promise.reject('Empty text');
+
+  const localPath = getLocalAudioPath(cleanText);
+  if (isAudioCached(localPath)) {
+    return Promise.resolve(localPath);
+  }
+
+  // 1. 优先检查静态库路径（可以是 Gitee 远程链接）
+  const staticPath = getStaticAudioPath(cleanText);
+  if (staticPath) {
+    if (staticPath.startsWith('http')) {
+      // 如果静态文件托管在远程（如 Gitee），下载并缓存在本地
+      return downloadAndSaveAudio(staticPath, localPath);
+    }
+    return Promise.resolve(staticPath);
+  }
+
+  // 2. 否则在线下载 Google TTS
+  const downloadUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
+  return downloadAndSaveAudio(downloadUrl, localPath);
 }
 
 /**
@@ -540,7 +567,7 @@ export function playThaiTTS(
 
     const { ctxA } = getAudioContexts();
     globalOnEnded = onEnded || null;
-    const adjustedRate = Math.min(2.0, rate);
+    const adjustedRate = getSupportedPlaybackRate(rate);
 
     const playAudio = (src: string) => {
       ctxA.offPlay();
@@ -576,7 +603,7 @@ export function playThaiTTS(
       });
 
       ctxA.onError((err) => {
-        console.warn(`Google TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
+        console.warn(`Google/Gitee TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
         playViaYoudao(cleanText, rate, undefined, onEnded);
       });
 
@@ -588,33 +615,48 @@ export function playThaiTTS(
       }, 100) as unknown as number;
     };
 
-    // 1. 【核心优化】：只要静态分包中有预置音频，无论是否开启 Google 通道都直接播放（完全秒开、无需联网）
+    const localPath = getLocalAudioPath(cleanText);
     const staticPath = getStaticAudioPath(cleanText);
-    if (staticPath) {
-      playAudio(staticPath);
+
+    // 1. 优先播放本地持久化缓存（不管是 Gitee 缓存下来的还是 Google 在线缓存下来的）
+    if (isAudioCached(localPath)) {
+      playAudio(localPath);
       return;
     }
 
-    // 2. 如果是生词，且用户开启了 Google 通道，去尝试下载/播放缓存
-    if (config.useGoogleTTS) {
-      const localPath = getLocalAudioPath(cleanText);
-      if (isAudioCached(localPath)) {
-        playAudio(localPath);
-      } else {
+    // 2. 如果静态路径中存在该词（比如 Gitee 地址）
+    if (staticPath) {
+      if (staticPath.startsWith('http')) {
+        // 如果是远程 Gitee URL，先下载缓存并播放本地路径以实现二次秒开；缓存失败则在线直接播放
         preFetchGoogleTTS(cleanText)
           .then((cachedPath) => {
             playAudio(cachedPath);
           })
           .catch((err) => {
-            console.warn(`Pre-fetch Google TTS failed for "${cleanText}", playing from remote URL. Error:`, err);
-            const googleUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
-            playAudio(googleUrl);
+            console.warn(`Pre-cache Gitee audio failed, playing online:`, err);
+            playAudio(staticPath);
           });
+        return;
       }
+      playAudio(staticPath);
       return;
     }
 
-    // 3. 默认回退使用有道发音方案
+    // 3. 用户启用了 Google 通道，去尝试下载并缓存播放
+    if (config.useGoogleTTS) {
+      preFetchGoogleTTS(cleanText)
+        .then((cachedPath) => {
+          playAudio(cachedPath);
+        })
+        .catch((err) => {
+          console.warn(`Pre-fetch Google TTS failed for "${cleanText}", playing from remote URL. Error:`, err);
+          const googleUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
+          playAudio(googleUrl);
+        });
+      return;
+    }
+
+    // 4. 默认回退使用有道发音方案
     playViaYoudao(cleanText, rate, onStart, onEnded);
 
   } catch (e) {
