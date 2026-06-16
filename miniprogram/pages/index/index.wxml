@@ -9,14 +9,6 @@
       wx:if="{{activeTab === 'translate'}}" 
       bind:historychange="onHistoryChange"
     ></translate-view>
-    
-    <import-view 
-      id="importView" 
-      class="view-item" 
-      wx:elif="{{activeTab === 'import'}}" 
-      bind:historychange="onHistoryChange"
-      bind:switchtab="onSwitchTabFromComponent"
-    ></import-view>
 
     <scenarios-view
       id="scenariosView"
@@ -38,10 +30,6 @@
     <view class="tab-item {{activeTab === 'translate' ? 'active' : ''}}" data-tab="translate" bindtap="onSwitchTab">
       <image class="tab-icon" src="/assets/icons/translate{{activeTab === 'translate' ? '-active' : ''}}.svg" />
       <text class="tab-text">翻译</text>
-    </view>
-    <view class="tab-item {{activeTab === 'import' ? 'active' : ''}}" data-tab="import" bindtap="onSwitchTab">
-      <image class="tab-icon" src="/assets/icons/import{{activeTab === 'import' ? '-active' : ''}}.svg" />
-      <text class="tab-text">自建</text>
     </view>
     <view class="tab-item {{activeTab === 'scenarios' ? 'active' : ''}}" data-tab="scenarios" bindtap="onSwitchTab">
       <image class="tab-icon" src="/assets/icons/scenarios{{activeTab === 'scenarios' ? '-active' : ''}}.svg" />

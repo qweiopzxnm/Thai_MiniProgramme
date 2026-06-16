@@ -5,7 +5,7 @@ Component({
    * 页面的初始数据
    */
   data: {
-    activeTab: 'scenarios' as 'translate' | 'import' | 'scenarios' | 'review',
+    activeTab: 'scenarios' as 'translate' | 'scenarios' | 'review',
     navTitle: '情景与经典课文'
   },
 
@@ -21,25 +21,15 @@ Component({
      * 切换底部 Tab
      */
     onSwitchTab(e: any) {
-      const tab = e.currentTarget.dataset.tab as 'translate' | 'import' | 'scenarios' | 'review';
+      const tab = e.currentTarget.dataset.tab as 'translate' | 'scenarios' | 'review';
       this.switchTabTo(tab);
     },
 
-    /**
-     * 来自子组件内部触发的 Tab 切换事件 (例如导入保存成功后切换到笔记本)
-     */
-    onSwitchTabFromComponent(e: any) {
-      const tab = e.detail.tab as 'translate' | 'import' | 'scenarios' | 'review';
-      this.switchTabTo(tab);
-    },
-
-    switchTabTo(tab: 'translate' | 'import' | 'scenarios' | 'review') {
+    switchTabTo(tab: 'translate' | 'scenarios' | 'review') {
       if (tab === this.data.activeTab) return;
 
       let navTitle = '泰语翻译与拆解';
-      if (tab === 'import') {
-        navTitle = '自建泰语学习';
-      } else if (tab === 'scenarios') {
+      if (tab === 'scenarios') {
         navTitle = '情景与经典课文';
       } else if (tab === 'review') {
         navTitle = '学习笔记本';

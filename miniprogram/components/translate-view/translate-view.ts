@@ -35,14 +35,7 @@ Component({
       index: -1
     },
 
-    // 常用中文例句预设
-    presets: [
-      '客人提供的要求是，把成本做到最小，你知道我们如何做吗，谁会负责这个事情',
-      '太贵了，便宜点可以吗？',
-      '去机场怎么走？',
-      '厕所在哪里？',
-      '泰餐很好吃。'
-    ]
+
   },
 
   lifetimes: {
@@ -95,14 +88,7 @@ Component({
       stopThaiTTS();
     },
 
-    onSelectPreset(e: any) {
-      const text = e.currentTarget.dataset.text;
-      this.setData({
-        chineseText: text
-      }, () => {
-        this.onTranslate();
-      });
-    },
+
 
     /**
      * 翻译并切分单词

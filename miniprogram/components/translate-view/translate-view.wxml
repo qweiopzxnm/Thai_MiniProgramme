@@ -28,22 +28,7 @@
     </view>
   </view>
 
-  <!-- Suggestion/Preset Example List (Only shown when input is empty and no translation result is displayed) -->
-  <view class="preset-section" wx:if="{{!chineseText && !translationResult}}">
-    <view class="section-title">你可以试着输入以下中文例句：</view>
-    <view class="preset-list">
-      <view 
-        class="preset-item" 
-        wx:for="{{presets}}" 
-        wx:key="*this" 
-        data-text="{{item}}" 
-        bindtap="onSelectPreset"
-      >
-        <text class="preset-text">{{item}}</text>
-        <text class="preset-arrow">→</text>
-      </view>
-    </view>
-  </view>
+
 
   <!-- Translation Result Section -->
   <view class="result-section" wx:if="{{translationResult}}">
