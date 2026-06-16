@@ -611,6 +611,25 @@ export function playThaiTTS(
       });
 
       ctxA.onError((err) => {
+        // Self-healing: if playing a local file fails, delete the local file because it's probably corrupt/HTML!
+        if (src.startsWith(localFolder)) {
+          console.warn(`Local cached audio failed to play, deleting corrupted cache file: ${src}. Error:`, err);
+          try {
+            fs.unlinkSync(src);
+          } catch (e) {
+            console.error('Failed to unlink corrupted file:', e);
+          }
+          if (staticPath) {
+            console.log(`Self-healing: Re-trying playback directly from remote CDN: ${staticPath}`);
+            playAudio(staticPath);
+            // Re-download the correct audio in the background
+            downloadAndSaveAudio(staticPath, src).catch((e) => {
+              console.error('Self-healing background cache recovery failed:', e);
+            });
+            return;
+          }
+        }
+
         if (disableYoudao) {
           console.error(`Static audio failed to play, Youdao fallback is disabled for this sentence: "${cleanText}" (src: ${src}). Error:`, err);
           stopThaiTTS();
