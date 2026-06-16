@@ -1,6 +1,7 @@
 // utils/tts.ts
 import { getConfig } from './config';
 import { staticHashes } from './static_hashes';
+import { segmentThai } from './segment';
 
 /**
  * 校准倍速数值，强制符合微信小程序 InnerAudioContext 官方仅支持的 0.5, 0.8, 1.0, 1.25, 1.5, 2.0 规格
@@ -104,29 +105,27 @@ export function stopThaiTTS(): void {
 }
 
 /**
- * 纯系统级别的细粒度分词器，专门用于 TTS 顺序播放，避免合并词触发 500 报错
+ * 纯系统与字典结合的细粒度分词器，专门用于 TTS 顺序播放，避免合并词触发 500 报错
  */
 function segmentThaiForAudio(text: string): string[] {
   const trimmed = text.trim();
   if (!trimmed) return [];
   
-  if (typeof Intl !== 'undefined' && (Intl as any).Segmenter) {
-    try {
-      const segmenter = new (Intl as any).Segmenter('th', { granularity: 'word' });
-      const segments = segmenter.segment(trimmed);
-      const result: string[] = [];
-      for (const { segment } of segments) {
-        const word = segment.trim();
-        // 过滤空白、特殊符号和标点
-        if (word && !/[\s\p{P}]/u.test(word)) {
-          result.push(word);
-        }
+  try {
+    const segmented = segmentThai(trimmed);
+    const result: string[] = [];
+    for (const item of segmented) {
+      const word = item.word.trim();
+      // 过滤空白、特殊符号和标点
+      if (word && !/[\s\p{P}]/u.test(word)) {
+        result.push(word);
       }
-      return result;
-    } catch (e) {
-      console.error('Intl.Segmenter in segmentThaiForAudio failed:', e);
     }
+    return result;
+  } catch (e) {
+    console.error('segmentThai in segmentThaiForAudio failed:', e);
   }
+  
   return trimmed.split('').filter(char => char.trim() !== '');
 }
 
