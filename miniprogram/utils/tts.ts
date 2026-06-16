@@ -23,20 +23,21 @@ let ctxA: WechatMiniprogram.InnerAudioContext | null = null;
 let playTimeoutId: number | null = null;
 let globalOnEnded: (() => void) | null = null;
 
+// 在模块加载时提前设置全局音频选项，避免在首次播放时触发系统音频通道重置导致首句声音截断
+if (wx.setInnerAudioOption) {
+  wx.setInnerAudioOption({
+    obeyMuteSwitch: false,
+    fail: (err) => {
+      console.error('setInnerAudioOption fail:', err);
+    }
+  });
+}
+
 function getAudioContexts(): {
   ctxA: WechatMiniprogram.InnerAudioContext;
 } {
   if (!ctxA) {
     ctxA = wx.createInnerAudioContext();
-    // 允许在 iOS 物理静音键开启时依然能播放声音
-    if (wx.setInnerAudioOption) {
-      wx.setInnerAudioOption({
-        obeyMuteSwitch: false,
-        fail: (err) => {
-          console.error('setInnerAudioOption fail:', err);
-        }
-      });
-    }
   }
   return { ctxA };
 }
@@ -91,7 +92,9 @@ function playViaYoudao(
     const adjustedRate = getSupportedPlaybackRate(rate);
 
     ctxA.onPlay(() => {
-      ctxA.playbackRate = adjustedRate;
+      if (adjustedRate !== 1.0) {
+        ctxA.playbackRate = adjustedRate;
+      }
       if (onStart) {
         try {
           onStart();
@@ -102,7 +105,9 @@ function playViaYoudao(
     });
 
     ctxA.onCanplay(() => {
-      ctxA.playbackRate = adjustedRate;
+      if (adjustedRate !== 1.0) {
+        ctxA.playbackRate = adjustedRate;
+      }
     });
 
     ctxA.onEnded(() => {
@@ -130,7 +135,9 @@ function playViaYoudao(
 
     playTimeoutId = setTimeout(() => {
       ctxA.src = edgeSrc;
-      ctxA.playbackRate = adjustedRate;
+      if (adjustedRate !== 1.0) {
+        ctxA.playbackRate = adjustedRate;
+      }
       ctxA.play();
       playTimeoutId = null;
     }, 100) as unknown as number;
@@ -299,7 +306,9 @@ export function playThaiTTS(
       ctxA.offError();
 
       ctxA.onPlay(() => {
-        ctxA.playbackRate = adjustedRate;
+        if (adjustedRate !== 1.0) {
+          ctxA.playbackRate = adjustedRate;
+        }
         if (onStart) {
           try {
             onStart();
@@ -310,7 +319,9 @@ export function playThaiTTS(
       });
 
       ctxA.onCanplay(() => {
-        ctxA.playbackRate = adjustedRate;
+        if (adjustedRate !== 1.0) {
+          ctxA.playbackRate = adjustedRate;
+        }
       });
 
       ctxA.onEnded(() => {
@@ -362,7 +373,9 @@ export function playThaiTTS(
 
       playTimeoutId = setTimeout(() => {
         ctxA.src = src;
-        ctxA.playbackRate = adjustedRate;
+        if (adjustedRate !== 1.0) {
+          ctxA.playbackRate = adjustedRate;
+        }
         ctxA.play();
         playTimeoutId = null;
       }, 100) as unknown as number;
