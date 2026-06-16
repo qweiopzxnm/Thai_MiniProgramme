@@ -140,7 +140,7 @@ function playViaYoudao(
       }
       ctxA.play();
       playTimeoutId = null;
-    }, 100) as unknown as number;
+    }, 30) as unknown as number;
 
   } catch (e) {
     console.error('Error in playViaYoudao (Edge TTS):', e);
@@ -204,8 +204,8 @@ export function getStaticAudioPath(text: string): string {
   if (staticHashes.has(hash)) {
     // 使用大数取模将哈希非常均匀地分流到 10 个包中
     const pkgNum = (parseInt(hash.substring(0, 6), 16) % 10) + 1;
-    // 使用 jsDelivr 官方备用高速镜像节点（对国内网络有极佳的加速效果，完全免去 Captcha 拦截和 302 重定向）
-    return `https://gcore.jsdelivr.net/gh/qweiopzxnm/thaiminiprogramme@audio-assets/miniprogram/audio_pkg_${pkgNum}/${hash}.mp3`;
+    // 使用高速 jsDelivr 镜像节点，在大陆拥有极佳的访问速度与极低的音频流缓冲时延
+    return `https://jsd.onmicrosoft.cn/gh/qweiopzxnm/thaiminiprogramme@audio-assets/miniprogram/audio_pkg_${pkgNum}/${hash}.mp3`;
   }
   return '';
 }
@@ -242,6 +242,9 @@ function downloadAndSaveAudio(url: string, localPath: string): Promise<string> {
   });
 }
 
+// 缓存追踪下载任务，防止相同请求的高并发重复拉取
+const activeDownloads = new Set<string>();
+
 /**
  * 异步下载并缓存 Google TTS / Gitee 远程音频文件
  */
@@ -254,19 +257,33 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
     return Promise.resolve(localPath);
   }
 
+  const hash = getSafeHash(cleanText);
+  if (activeDownloads.has(hash)) {
+    return Promise.resolve(localPath);
+  }
+
+  activeDownloads.add(hash);
+  const cleanup = () => {
+    activeDownloads.delete(hash);
+  };
+
   // 1. 优先检查静态库路径（可以是 Gitee 远程链接）
   const staticPath = getStaticAudioPath(cleanText);
   if (staticPath) {
     if (staticPath.startsWith('http')) {
-      // 如果静态文件托管在远程（如 Gitee），下载并缓存在本地
-      return downloadAndSaveAudio(staticPath, localPath);
+      return downloadAndSaveAudio(staticPath, localPath)
+        .then((res) => { cleanup(); return res; })
+        .catch((err) => { cleanup(); throw err; });
     }
+    cleanup();
     return Promise.resolve(staticPath);
   }
 
   // 2. 否则在线下载 Google TTS
   const downloadUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
-  return downloadAndSaveAudio(downloadUrl, localPath);
+  return downloadAndSaveAudio(downloadUrl, localPath)
+    .then((res) => { cleanup(); return res; })
+    .catch((err) => { cleanup(); throw err; });
 }
 
 /**
@@ -378,7 +395,7 @@ export function playThaiTTS(
         }
         ctxA.play();
         playTimeoutId = null;
-      }, 100) as unknown as number;
+      }, 30) as unknown as number;
     };
 
     const localPath = getLocalAudioPath(cleanText);
@@ -393,15 +410,12 @@ export function playThaiTTS(
     // 2. 如果静态路径中存在该词（比如 Gitee 地址）
     if (staticPath) {
       if (staticPath.startsWith('http')) {
-        // 如果是远程 Gitee URL，先下载缓存并播放本地路径以实现二次秒开；缓存失败则在线直接播放
-        preFetchGoogleTTS(cleanText)
-          .then((cachedPath) => {
-            playAudio(cachedPath);
-          })
-          .catch((err) => {
-            console.warn(`Pre-cache Gitee audio failed, playing online:`, err);
-            playAudio(staticPath);
-          });
+        // 立即在线流媒体直接播放，彻底消除因为网络下载阻塞发音导致的高时延
+        playAudio(staticPath);
+        // 后台异步静默下载缓存以供下次秒开，用户无需感知等待
+        preFetchGoogleTTS(cleanText).catch((err) => {
+          console.warn('Background static pre-fetch failed:', err);
+        });
         return;
       }
       playAudio(staticPath);
@@ -410,15 +424,13 @@ export function playThaiTTS(
 
     // 3. 用户启用了 Google 通道，去尝试下载并缓存播放
     if (config.useGoogleTTS) {
-      preFetchGoogleTTS(cleanText)
-        .then((cachedPath) => {
-          playAudio(cachedPath);
-        })
-        .catch((err) => {
-          console.warn(`Pre-fetch Google TTS failed for "${cleanText}", playing from remote URL. Error:`, err);
-          const googleUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
-          playAudio(googleUrl);
-        });
+      const googleUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(cleanText)}`;
+      // 立即在线播放以避免延迟
+      playAudio(googleUrl);
+      // 后台静默下载缓存
+      preFetchGoogleTTS(cleanText).catch((err) => {
+        console.warn('Background Google pre-fetch failed:', err);
+      });
       return;
     }
 
