@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Edge TTS Proxy Server Status</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e1e38 0%, #0e0e1b 100%);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .status-badge {
+      display: inline-block;
+      background: rgba(0, 255, 128, 0.1);
+      color: #00ff80;
+      border: 1px solid rgba(0, 255, 128, 0.3);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin: 15px 0;
+    }
+    p {
+      color: #b3b3cc;
+      font-size: 1.1rem;
+      margin: 10px 0 20px 0;
+    }
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-family: Consolas, Monaco, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Edge TTS Proxy</h1>
+    <div class="status-badge">● ONLINE / 运行中</div>
+    <p>您的微软 Edge 语音代理服务已成功部署并运行。</p>
+    <p>接口地址: <code>/api/tts?text=要发音的泰语文本</code></p>
+  </div>
+</body>
+</html>
