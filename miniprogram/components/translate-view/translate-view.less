@@ -495,3 +495,45 @@
   0% { transform: scaleY(0.4); }
   100% { transform: scaleY(1); }
 }
+
+.rate-control-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px dashed #e5e7eb;
+  border-bottom: 1px dashed #e5e7eb;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rate-label {
+  font-size: 13px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.rate-buttons {
+  display: flex;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.rate-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.rate-btn.active {
+  background-color: #ffffff;
+  color: #4f46e5;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

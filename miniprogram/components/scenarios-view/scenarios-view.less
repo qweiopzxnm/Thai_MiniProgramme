@@ -458,6 +458,35 @@
   border-bottom: 0.5px solid #e2e8f0;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.speed-selector {
+  display: flex;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.speed-option {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #64748b;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.speed-option.active {
+  background-color: #ffffff;
+  color: #4f46e5;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 .back-action {
   display: flex;
   align-items: center;

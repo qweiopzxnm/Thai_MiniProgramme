@@ -9,6 +9,16 @@
       bindinput="onInput"
       maxlength="200"
     />
+    <view class="rate-control-row">
+      <text class="rate-label">发音语速</text>
+      <view class="rate-buttons">
+        <view class="rate-btn {{speechRate === 0.75 ? 'active' : ''}}" data-rate="0.75" bindtap="onChangeRate">0.75x</view>
+        <view class="rate-btn {{speechRate === 1.0 ? 'active' : ''}}" data-rate="1.0" bindtap="onChangeRate">1.0x</view>
+        <view class="rate-btn {{speechRate === 1.25 ? 'active' : ''}}" data-rate="1.25" bindtap="onChangeRate">1.25x</view>
+        <view class="rate-btn {{speechRate === 1.5 ? 'active' : ''}}" data-rate="1.5" bindtap="onChangeRate">1.5x</view>
+      </view>
+    </view>
+    
     <view class="input-footer">
       <text class="char-count">{{chineseText.length}}/200</text>
       <view class="btn-group">

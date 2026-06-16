@@ -5,7 +5,7 @@ Component({
    * 页面的初始数据
    */
   data: {
-    activeTab: 'scenarios' as 'translate' | 'import' | 'scenarios' | 'review' | 'settings',
+    activeTab: 'scenarios' as 'translate' | 'import' | 'scenarios' | 'review',
     navTitle: '情景与经典课文'
   },
 
@@ -21,7 +21,7 @@ Component({
      * 切换底部 Tab
      */
     onSwitchTab(e: any) {
-      const tab = e.currentTarget.dataset.tab as 'translate' | 'import' | 'scenarios' | 'review' | 'settings';
+      const tab = e.currentTarget.dataset.tab as 'translate' | 'import' | 'scenarios' | 'review';
       this.switchTabTo(tab);
     },
 
@@ -29,11 +29,11 @@ Component({
      * 来自子组件内部触发的 Tab 切换事件 (例如导入保存成功后切换到笔记本)
      */
     onSwitchTabFromComponent(e: any) {
-      const tab = e.detail.tab as 'translate' | 'import' | 'scenarios' | 'review' | 'settings';
+      const tab = e.detail.tab as 'translate' | 'import' | 'scenarios' | 'review';
       this.switchTabTo(tab);
     },
 
-    switchTabTo(tab: 'translate' | 'import' | 'scenarios' | 'review' | 'settings') {
+    switchTabTo(tab: 'translate' | 'import' | 'scenarios' | 'review') {
       if (tab === this.data.activeTab) return;
 
       let navTitle = '泰语翻译与拆解';
@@ -43,8 +43,6 @@ Component({
         navTitle = '情景与经典课文';
       } else if (tab === 'review') {
         navTitle = '学习笔记本';
-      } else if (tab === 'settings') {
-        navTitle = '助手偏好设置';
       }
 
       this.setData({
@@ -70,20 +68,23 @@ Component({
      */
     refreshActiveComponent(tab: string) {
       try {
-        if (tab === 'review') {
-          const comp = this.selectComponent('#reviewView');
-          if (comp && typeof comp.onRefresh === 'function') {
-            comp.onRefresh();
-          }
-        } else if (tab === 'settings') {
-          const comp = this.selectComponent('#settingsView');
-          if (comp && typeof comp.onRefresh === 'function') {
-            comp.onRefresh();
+        if (tab === 'translate') {
+          const comp = this.selectComponent('#translateView');
+          if (comp && typeof comp.loadSpeechRate === 'function') {
+            comp.loadSpeechRate();
           }
         } else if (tab === 'scenarios') {
           const comp = this.selectComponent('#scenariosView');
           if (comp && typeof comp.updateTurnState === 'function') {
             comp.updateTurnState();
+          }
+          if (comp && typeof comp.loadSpeechRate === 'function') {
+            comp.loadSpeechRate();
+          }
+        } else if (tab === 'review') {
+          const comp = this.selectComponent('#reviewView');
+          if (comp && typeof comp.onRefresh === 'function') {
+            comp.onRefresh();
           }
         }
       } catch (e) {

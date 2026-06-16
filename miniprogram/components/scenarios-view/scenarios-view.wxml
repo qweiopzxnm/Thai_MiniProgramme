@@ -202,12 +202,22 @@
     <view class="player-header">
       <view class="back-action" bindtap="onBackToList">
         <text class="back-arrow">←</text>
-        <text class="back-text">返回列表</text>
+        <text class="back-text">返回</text>
       </view>
       
-      <view class="auto-play-toggle">
-        <text class="toggle-label">自动播放</text>
-        <switch class="toggle-switch" checked="{{autoPlay}}" color="#4F46E5" bindchange="onToggleAutoPlay" />
+      <view class="header-right">
+        <!-- 语速选择 -->
+        <view class="speed-selector">
+          <view class="speed-option {{speechRate === 0.75 ? 'active' : ''}}" data-rate="0.75" bindtap="onChangeRate">0.75x</view>
+          <view class="speed-option {{speechRate === 1.0 ? 'active' : ''}}" data-rate="1.0" bindtap="onChangeRate">1.0x</view>
+          <view class="speed-option {{speechRate === 1.25 ? 'active' : ''}}" data-rate="1.25" bindtap="onChangeRate">1.25x</view>
+          <view class="speed-option {{speechRate === 1.5 ? 'active' : ''}}" data-rate="1.5" bindtap="onChangeRate">1.5x</view>
+        </view>
+        
+        <view class="auto-play-toggle">
+          <text class="toggle-label">自动播放</text>
+          <switch class="toggle-switch" checked="{{autoPlay}}" color="#4F46E5" bindchange="onToggleAutoPlay" />
+        </view>
       </view>
     </view>
 

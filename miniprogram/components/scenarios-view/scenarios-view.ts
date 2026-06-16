@@ -12,6 +12,7 @@ import {
   deleteUserWord,
   TranslationItem
 } from '../../utils/db';
+import { getConfig, setConfig } from '../../utils/config';
 
 interface CharacterUI {
   id: string;
@@ -112,7 +113,8 @@ Component({
     segmentedWords: [] as SegmentedWordUI[],
     
     // 收藏状态
-    isSentenceStarred: false
+    isSentenceStarred: false,
+    speechRate: 1.0
   },
 
   /**
@@ -122,6 +124,7 @@ Component({
     attached() {
       this.filterScenarios(true);
       this.updateVisiblePhrases();
+      this.loadSpeechRate();
     },
     detached() {
       this.clearAutoPlayTimer();
@@ -133,6 +136,26 @@ Component({
    * 组件的方法列表
    */
   methods: {
+    loadSpeechRate() {
+      const config = getConfig();
+      this.setData({
+        speechRate: config.speechRate || 1.0
+      });
+    },
+
+    onChangeRate(e: any) {
+      const rate = parseFloat(e.currentTarget.dataset.rate);
+      if (rate === this.data.speechRate) return;
+
+      setConfig({ speechRate: rate });
+      this.setData({ speechRate: rate });
+
+      wx.showToast({
+        title: `语速已设为 ${rate}x`,
+        icon: 'success'
+      });
+    },
+
     /**
      * 过滤显示场景 (支持一级大类 + 二级子类过滤)
      */

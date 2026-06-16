@@ -1,8 +1,8 @@
-// components/translate-view/translate-view.ts
 import { translateChineseToThai, lookupUnknownWord } from '../../utils/translate';
 import { segmentThai, SegmentedWord } from '../../utils/segment';
 import { saveHistoryItem, saveUserWord, getHistory } from '../../utils/db';
 import { playThaiTTS, stopThaiTTS } from '../../utils/tts';
+import { getConfig, setConfig } from '../../utils/config';
 
 Component({
   /**
@@ -24,6 +24,7 @@ Component({
     // 播放状态管理
     playingSentence: false,
     playingIndex: -1,
+    speechRate: 1.0,
 
     // 编辑弹窗管理
     showEditModal: false,
@@ -45,6 +46,9 @@ Component({
   },
 
   lifetimes: {
+    attached() {
+      this.loadSpeechRate();
+    },
     detached() {
       stopThaiTTS();
     }
@@ -54,6 +58,26 @@ Component({
    * 组件的方法列表
    */
   methods: {
+    loadSpeechRate() {
+      const config = getConfig();
+      this.setData({
+        speechRate: config.speechRate || 1.0
+      });
+    },
+
+    onChangeRate(e: any) {
+      const rate = parseFloat(e.currentTarget.dataset.rate);
+      if (rate === this.data.speechRate) return;
+
+      setConfig({ speechRate: rate });
+      this.setData({ speechRate: rate });
+
+      wx.showToast({
+        title: `语速已设为 ${rate}x`,
+        icon: 'success'
+      });
+    },
+
     onInput(e: any) {
       this.setData({
         chineseText: e.detail.value

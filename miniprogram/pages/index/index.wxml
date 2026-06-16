@@ -6,14 +6,14 @@
     <translate-view 
       id="translateView" 
       class="view-item" 
-      wx:if="{{activeTab === 'translate'}}" 
+      hidden="{{activeTab !== 'translate'}}" 
       bind:historychange="onHistoryChange"
     ></translate-view>
     
     <import-view 
       id="importView" 
       class="view-item" 
-      wx:elif="{{activeTab === 'import'}}" 
+      hidden="{{activeTab !== 'import'}}" 
       bind:historychange="onHistoryChange"
       bind:switchtab="onSwitchTabFromComponent"
     ></import-view>
@@ -21,23 +21,16 @@
     <scenarios-view
       id="scenariosView"
       class="view-item"
-      wx:elif="{{activeTab === 'scenarios'}}"
+      hidden="{{activeTab !== 'scenarios'}}"
       bind:historychange="onHistoryChange"
     ></scenarios-view>
     
     <review-view 
       id="reviewView" 
       class="view-item" 
-      wx:elif="{{activeTab === 'review'}}" 
+      hidden="{{activeTab !== 'review'}}" 
       bind:historychange="onHistoryChange"
     ></review-view>
-    
-    <settings-view 
-      id="settingsView" 
-      class="view-item" 
-      wx:elif="{{activeTab === 'settings'}}" 
-      bind:historychange="onHistoryChange"
-    ></settings-view>
   </view>
   
   <!-- Custom TabBar -->
@@ -57,10 +50,6 @@
     <view class="tab-item {{activeTab === 'review' ? 'active' : ''}}" data-tab="review" bindtap="onSwitchTab">
       <image class="tab-icon" src="/assets/icons/review{{activeTab === 'review' ? '-active' : ''}}.svg" />
       <text class="tab-text">笔记本</text>
-    </view>
-    <view class="tab-item {{activeTab === 'settings' ? 'active' : ''}}" data-tab="settings" bindtap="onSwitchTab">
-      <image class="tab-icon" src="/assets/icons/settings{{activeTab === 'settings' ? '-active' : ''}}.svg" />
-      <text class="tab-text">设置</text>
     </view>
   </view>
 </view>
