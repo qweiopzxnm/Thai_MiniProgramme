@@ -472,13 +472,6 @@ Component({
       const leftRoleId = roleIds[0] || '';
       const rightRoleId = roleIds[1] || '';
 
-      // 异步预下载整场对话的静态托管音频文件到本地缓存，完全免去播放延迟
-      scenario.dialogues.forEach(turn => {
-        preFetchGoogleTTS(turn.thai).catch(err => {
-          console.warn('Pre-fetch scenario TTS failed:', err);
-        });
-      });
-
       this.setData({
         activeScenario,
         currentTurnIndex: 0,
@@ -531,6 +524,14 @@ Component({
         isSentenceStarred,
         lastViewId: `bubble_${turn.id}`
       });
+
+      // 智能预载下一句，以单任务背景队列形式加载，完全避免并发网络阻塞，保障平滑切换
+      if (currentTurnIndex < activeScenario.dialogues.length - 1) {
+        const nextTurn = activeScenario.dialogues[currentTurnIndex + 1];
+        preFetchGoogleTTS(nextTurn.thai).catch(err => {
+          console.warn('Pre-fetch next turn audio failed:', err);
+        });
+      }
     },
 
     /**
