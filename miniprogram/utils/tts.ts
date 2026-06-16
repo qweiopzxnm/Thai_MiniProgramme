@@ -552,11 +552,13 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
  * @param text 要播放的泰语文本
  * @param onStart 播放开始回调
  * @param onEnded 播放结束回调
+ * @param disableYoudao 是否禁用有道发音通道（默认为 false）
  */
 export function playThaiTTS(
   text: string,
   onStart?: () => void,
-  onEnded?: () => void
+  onEnded?: () => void,
+  disableYoudao: boolean = false
 ): void {
   try {
     // 停止当前播放并清空状态
@@ -609,8 +611,19 @@ export function playThaiTTS(
       });
 
       ctxA.onError((err) => {
-        console.warn(`Google/Gitee TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
-        playViaYoudao(cleanText, rate, undefined, onEnded);
+        if (disableYoudao) {
+          console.error(`Static audio failed to play, Youdao fallback is disabled for this sentence: "${cleanText}" (src: ${src}). Error:`, err);
+          stopThaiTTS();
+          const cb = globalOnEnded;
+          if (cb) {
+            try {
+              cb();
+            } catch (e) {}
+          }
+        } else {
+          console.warn(`Google/Gitee TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
+          playViaYoudao(cleanText, rate, undefined, onEnded);
+        }
       });
 
       playTimeoutId = setTimeout(() => {
@@ -663,7 +676,16 @@ export function playThaiTTS(
     }
 
     // 4. 默认回退使用有道发音方案
-    playViaYoudao(cleanText, rate, onStart, onEnded);
+    if (disableYoudao) {
+      console.warn(`Audio "${cleanText}" not found in static hashes, and Youdao is disabled. Playback skipped.`);
+      if (onEnded) {
+        try {
+          onEnded();
+        } catch (err) {}
+      }
+    } else {
+      playViaYoudao(cleanText, rate, onStart, onEnded);
+    }
 
   } catch (e) {
     console.error('Error playing TTS:', e);

@@ -3,7 +3,6 @@ import { SCENARIOS, Scenario } from '../../utils/scenarios';
 import { PHRASES_DATA } from '../../utils/phrases';
 import { segmentThai, SegmentedWord } from '../../utils/segment';
 import { playThaiTTS, stopThaiTTS, preFetchGoogleTTS } from '../../utils/tts';
-import { getConfig } from '../../utils/config';
 import { 
   getHistory, 
   saveHistoryItem, 
@@ -349,7 +348,7 @@ Component({
     onPlayPhrase(e: any) {
       const text = e.currentTarget.dataset.thai as string;
       if (!text) return;
-      playThaiTTS(text);
+      playThaiTTS(text, undefined, undefined, true);
     },
 
     /**
@@ -450,15 +449,12 @@ Component({
       const leftRoleId = roleIds[0] || '';
       const rightRoleId = roleIds[1] || '';
 
-      // 异步预下载整场对话的 Google TTS 音频文件到本地缓存，免去播放延迟和国内墙 Google 问题
-      const config = getConfig();
-      if (config.useGoogleTTS) {
-        scenario.dialogues.forEach(turn => {
-          preFetchGoogleTTS(turn.thai).catch(err => {
-            console.warn('Pre-fetch scenario TTS failed:', err);
-          });
+      // 异步预下载整场对话的静态托管音频文件到本地缓存，完全免去播放延迟
+      scenario.dialogues.forEach(turn => {
+        preFetchGoogleTTS(turn.thai).catch(err => {
+          console.warn('Pre-fetch scenario TTS failed:', err);
         });
-      }
+      });
 
       this.setData({
         activeScenario,
@@ -538,7 +534,8 @@ Component({
           if (this.data.autoPlay) {
             this.triggerAutoPlayNext();
           }
-        }
+        },
+        true
       );
     },
 
@@ -789,7 +786,7 @@ Component({
      */
     onPlayWord(e: any) {
       const word = e.currentTarget.dataset.word as string;
-      playThaiTTS(word);
+      playThaiTTS(word, undefined, undefined, true);
     },
 
     /**
@@ -798,7 +795,7 @@ Component({
     onPlayWordDirect(e: any) {
       const { word, meaning } = e.currentTarget.dataset;
       if (!word) return;
-      playThaiTTS(word);
+      playThaiTTS(word, undefined, undefined, true);
       wx.showToast({
         title: `${word}: ${meaning || '点击拆解添加注释'}`,
         icon: 'none',
