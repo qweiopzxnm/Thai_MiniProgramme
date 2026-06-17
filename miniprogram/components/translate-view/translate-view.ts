@@ -1,4 +1,4 @@
-import { translateChineseToThai, lookupUnknownWord } from '../../utils/translate';
+import { translateChineseToThai, translateThaiToChinese, lookupUnknownWord } from '../../utils/translate';
 import { segmentThai, SegmentedWord } from '../../utils/segment';
 import { saveHistoryItem, saveUserWord, getHistory } from '../../utils/db';
 import { playThaiTTS, stopThaiTTS } from '../../utils/tts';
@@ -18,6 +18,7 @@ Component({
     loading: false,
     originalChinese: '',
     translationResult: '',
+    translatedChinese: '',
     segmentedWords: [] as SegmentedWord[],
     currentHistoryId: '',
     
@@ -82,13 +83,12 @@ Component({
         chineseText: '',
         originalChinese: '',
         translationResult: '',
+        translatedChinese: '',
         segmentedWords: [],
         currentHistoryId: ''
       });
       stopThaiTTS();
     },
-
-
 
     /**
      * 翻译并切分单词
@@ -97,7 +97,7 @@ Component({
       const text = this.data.chineseText.trim();
       if (!text) {
         wx.showToast({
-          title: '请输入中文内容',
+          title: '请输入要翻译的内容',
           icon: 'none'
         });
         return;
@@ -106,17 +106,27 @@ Component({
       this.setData({ loading: true });
       stopThaiTTS();
 
-      translateChineseToThai(text)
-        .then((thaiTranslation) => {
-          // 对翻译的泰语文本进行本地最大匹配分词
-          const words = segmentThai(thaiTranslation);
+      // 检测是否为泰语输入 (包含泰文字符集)
+      const isThaiInput = /[\u0e00-\u0e7f]/.test(text);
+      const translatePromise = isThaiInput
+        ? translateThaiToChinese(text)
+        : translateChineseToThai(text);
+
+      translatePromise
+        .then((translation) => {
+          // 确定最终的泰文（发音与分词用）和中文（释义用）
+          const thaiText = isThaiInput ? text : translation;
+          const chineseText = isThaiInput ? translation : text;
+
+          // 对泰语文本进行本地最大匹配分词
+          const words = segmentThai(thaiText);
           const historyId = Date.now().toString();
 
           // 保存翻译历史记录
           const historyItem = {
             id: historyId,
-            chinese: text,
-            thai: thaiTranslation,
+            chinese: chineseText,
+            thai: thaiText,
             words: words,
             createdAt: Date.now(),
             starred: false,
@@ -128,7 +138,8 @@ Component({
 
           this.setData({
             originalChinese: text,
-            translationResult: thaiTranslation,
+            translationResult: thaiText,
+            translatedChinese: chineseText,
             segmentedWords: words,
             currentHistoryId: historyId,
             loading: false

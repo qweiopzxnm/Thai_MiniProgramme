@@ -4,7 +4,7 @@
   <view class="card input-card">
     <textarea 
       class="chinese-input" 
-      placeholder="请输入需要翻译的中文内容... (例如: 你好，这个多少钱？)" 
+      placeholder="请输入中文或泰语内容... (例如: 你好 / สวัสดี)" 
       value="{{chineseText}}" 
       bindinput="onInput"
       maxlength="200"
@@ -35,8 +35,8 @@
     <!-- Sentence Card -->
     <view class="card result-card">
       <view class="original-box">
-        <text class="label">原文：</text>
-        <text class="text">{{originalChinese}}</text>
+        <text class="label">中文：</text>
+        <text class="text">{{translatedChinese}}</text>
       </view>
       <view class="divider"></view>
       <view class="thai-box" bindtap="playSentence">

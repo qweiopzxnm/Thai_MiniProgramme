@@ -69,6 +69,23 @@ export function translateChineseToThai(text: string): Promise<string> {
   return translateViaVercel(trimmedText, 'zh-CN', 'th');
 }
 
+export function translateThaiToChinese(text: string): Promise<string> {
+  const trimmedText = text.trim();
+  
+  // 辅助函数：去除所有空格和标点符号，进行模糊归一化比对
+  const normalize = (s: string) => s.replace(/[\s\p{P}]/gu, '');
+  const normalizedInput = normalize(trimmedText);
+
+  // 1. 优先模糊匹配预设例句 (从值到键反向比对)
+  for (const [key, value] of Object.entries(PRESET_TRANSLATIONS)) {
+    if (normalize(value) === normalizedInput) {
+      return Promise.resolve(key);
+    }
+  }
+
+  return translateViaVercel(trimmedText, 'th', 'zh-CN');
+}
+
 /**
  * 免费/零配置在线翻译接口（走 Vercel 代理的谷歌翻译服务）
  */
@@ -159,9 +176,3 @@ export function lookupUnknownWord(word: string): Promise<{ phonetic: string; mea
     });
 }
 
-/**
- * 自动调用 Vercel 翻译将泰语整句翻译为中文
- */
-export function translateThaiToChinese(thaiText: string): Promise<string> {
-  return translateViaVercel(thaiText, 'th', 'zh-CN');
-}
