@@ -75,7 +75,7 @@ export function translateChineseToThai(text: string): Promise<string> {
 function translateViaVercel(text: string, from: string, to: string): Promise<string> {
   return new Promise((resolve, reject) => {
     wx.request({
-      url: 'https://thaiminiprogramme.vercel.app/api/translate',
+      url: 'https://www.barryapp.xyz/api/translate',
       data: {
         text: text,
         from: from,

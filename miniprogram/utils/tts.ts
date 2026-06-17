@@ -81,8 +81,8 @@ function playViaYoudao(
     const { ctxA } = getAudioContexts();
     globalOnEnded = onEnded || null;
 
-    // 使用我们刚刚部署在 Vercel 上的 Edge TTS 代理接口
-    const edgeSrc = `https://thaiminiprogramme.vercel.app/api/tts?text=${encodeURIComponent(cleanText)}`;
+    // 使用我们新绑定的自定义域名 Edge TTS 代理接口
+    const edgeSrc = `https://www.barryapp.xyz/api/tts?text=${encodeURIComponent(cleanText)}`;
 
     ctxA.offPlay();
     ctxA.offCanplay();
@@ -280,7 +280,7 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
   }
 
   // 2. 否则在线下载 Vercel Edge TTS
-  const downloadUrl = `https://thaiminiprogramme.vercel.app/api/tts?text=${encodeURIComponent(cleanText)}`;
+  const downloadUrl = `https://www.barryapp.xyz/api/tts?text=${encodeURIComponent(cleanText)}`;
   return downloadAndSaveAudio(downloadUrl, localPath)
     .then((res) => { cleanup(); return res; })
     .catch((err) => { cleanup(); throw err; });
@@ -424,7 +424,7 @@ export function playThaiTTS(
 
     // 3. 用户启用了 Google 通道，去尝试下载并缓存播放
     if (config.useGoogleTTS) {
-      const googleUrl = `https://thaiminiprogramme.vercel.app/api/tts?text=${encodeURIComponent(cleanText)}`;
+      const googleUrl = `https://www.barryapp.xyz/api/tts?text=${encodeURIComponent(cleanText)}`;
       // 立即在线播放以避免延迟
       playAudio(googleUrl);
       // 后台静默下载缓存

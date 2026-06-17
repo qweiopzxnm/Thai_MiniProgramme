@@ -68,7 +68,7 @@
   1. 在 `preFetchGoogleTTS` 和 `playThaiTTS` 中，当本地无缓存且哈希不存在时，会硬编码去尝试下载/播放 `translate.googleapis.com` 的音频。由于大陆网络对 Google TTS 的封锁，导致请求阻塞挂起并触发 3 秒以上的连接超时延迟，才艰难回退到 Edge 代理接口。
   2. 即使是后台预载（Pre-fetch），大量的挂起网络连接也会耗尽微信小程序的并发网络连接数（限制为 10 个），间接拖慢其他所有页面的音频和翻译请求速度。
 - **解决方案**：
-  1. 彻底清除了 `tts.ts` 中所有对 `translate.googleapis.com` 的请求，将其完全重定向至我们在 Vercel 上自建的高速 Edge TTS 接口 `https://thaiminiprogramme.vercel.app/api/tts?text=...`。
+  1. 彻底清除了 `tts.ts` 中所有对 `translate.googleapis.com` 的请求，将其完全重定向至我们在 Vercel 上自建的高速 Edge TTS 接口 `https://www.barryapp.xyz/api/tts?text=...`。
   2. 废弃了可能会引发静音的 `disableYoudao` 严格校验，统一将高音质微软 Neural 语音（Premwadee）作为万能的兜底备份，从而确保用户在任何极端离线或缓存受损情况下点击，都能在半秒内平滑听到高品质发音。
 
 ### 2. 部署国内 CDN 镜像服务进行静态音频加载，完全解耦 Vercel
@@ -79,8 +79,8 @@
   2. 新镜像地址格式：`https://cdn.jsdmirror.com/gh/qweiopzxnm/thaiminiprogramme@audio-assets/miniprogram/audio_pkg_${pkgNum}/${hash}.mp3`。该镜像节点在大陆拥有绝佳的访问速度（平均延迟小于 50ms），且完全解耦了对 Vercel 域名的依赖。
   3. **此时小程序发音的域名访问情况**：
      - **情景页/常用短语静态音频**：直接访问 `https://cdn.jsdmirror.com`（极速，完全不占用 Vercel 流量）。
-     - **动态翻译和后台 TTS 发音兜底**：依然使用 Vercel `https://thaiminiprogramme.vercel.app`。
-  4. 测试人员只需要在手机上把 `https://cdn.jsdmirror.com` 和 `https://thaiminiprogramme.vercel.app` 共同加入到微信小程序的 **`downloadFile合法域名`** 列表中即可。
+     - **动态翻译和后台 TTS 发音兜底**：使用我们新绑定的自定义域名 `https://www.barryapp.xyz`。
+  4. 测试人员只需要在手机上把 `https://cdn.jsdmirror.com` 和 `https://www.barryapp.xyz` 共同加入到微信小程序的 **`downloadFile合法域名`** 列表中即可。
 
 ### 3. 校准 `getShortMeaning` 斜杠分词精简 bug
 - **问题分析**：
