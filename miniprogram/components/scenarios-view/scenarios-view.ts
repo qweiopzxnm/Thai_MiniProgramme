@@ -98,6 +98,8 @@ Component({
     activeScenario: null as Scenario | null,
     currentTurnIndex: 0,
     isPlayingAudio: false,
+    isAudioBuffering: false,
+    audioDownloadProgress: 0,
     autoPlay: false,
     lastViewId: '',
     
@@ -543,23 +545,39 @@ Component({
 
       const turn = activeScenario.dialogues[currentTurnIndex];
       
-      this.setData({ isPlayingAudio: true });
+      this.setData({ 
+        isAudioBuffering: true,
+        isPlayingAudio: false,
+        audioDownloadProgress: 0
+      });
       
       playThaiTTS(
         turn.thai,
         () => {
           // onStart
-          this.setData({ isPlayingAudio: true });
+          this.setData({ 
+            isAudioBuffering: false,
+            isPlayingAudio: true,
+            audioDownloadProgress: 100
+          });
         },
         () => {
           // onEnded
-          this.setData({ isPlayingAudio: false });
+          this.setData({ 
+            isAudioBuffering: false,
+            isPlayingAudio: false 
+          });
           // 如果开启了自动播放，则进入下一句延时触发器
           if (this.data.autoPlay) {
             this.triggerAutoPlayNext();
           }
         },
-        true
+        true,
+        (progress) => {
+          this.setData({
+            audioDownloadProgress: progress
+          });
+        }
       );
     },
 

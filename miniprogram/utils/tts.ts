@@ -213,9 +213,13 @@ export function getStaticAudioPath(text: string): string {
 /**
  * 辅助下载函数，将音频文件下载并保存到本地持久化沙盒路径中
  */
-function downloadAndSaveAudio(url: string, localPath: string): Promise<string> {
+function downloadAndSaveAudio(
+  url: string, 
+  localPath: string,
+  onProgress?: (progress: number) => void
+): Promise<string> {
   return new Promise((resolve, reject) => {
-    wx.downloadFile({
+    const downloadTask = wx.downloadFile({
       url: url,
       success: (res) => {
         if (res.statusCode === 200) {
@@ -239,6 +243,12 @@ function downloadAndSaveAudio(url: string, localPath: string): Promise<string> {
         reject(err);
       }
     });
+
+    if (onProgress && downloadTask && typeof downloadTask.onProgressUpdate === 'function') {
+      downloadTask.onProgressUpdate((res) => {
+        onProgress(res.progress);
+      });
+    }
   });
 }
 
@@ -292,12 +302,14 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
  * @param onStart 播放开始回调
  * @param onEnded 播放结束回调
  * @param disableYoudao 是否禁用有道发音通道（默认为 false）
+ * @param onProgress 下载进度回调，接收 0-100 的数值
  */
 export function playThaiTTS(
   text: string,
   onStart?: () => void,
   onEnded?: () => void,
-  disableYoudao: boolean = false
+  disableYoudao: boolean = false,
+  onProgress?: (progress: number) => void
 ): void {
   try {
     // 停止当前播放并清空状态
@@ -403,39 +415,40 @@ export function playThaiTTS(
 
     // 1. 优先播放本地持久化缓存（不管是 Gitee 缓存下来的还是 Google 在线缓存下来的）
     if (isAudioCached(localPath)) {
+      if (onProgress) {
+        onProgress(100);
+      }
       playAudio(localPath);
       return;
     }
 
-    // 2. 如果静态路径中存在该词（比如 Gitee 地址）
-    if (staticPath) {
-      if (staticPath.startsWith('http')) {
-        // 立即在线流媒体直接播放，彻底消除因为网络下载阻塞发音导致的高时延
-        playAudio(staticPath);
-        // 后台异步静默下载缓存以供下次秒开，用户无需感知等待
-        preFetchGoogleTTS(cleanText).catch((err) => {
-          console.warn('Background static pre-fetch failed:', err);
-        });
-        return;
-      }
-      playAudio(staticPath);
-      return;
+    // 2. 如果本地未缓存，我们需要去远程下载并保存，期间提供进度反馈
+    let downloadUrl = '';
+    if (staticPath && staticPath.startsWith('http')) {
+      downloadUrl = staticPath;
+    } else {
+      downloadUrl = `https://www.barryapp.xyz/api/tts?text=${encodeURIComponent(cleanText)}`;
     }
 
-    // 3. 用户启用了 Google 通道，去尝试下载并缓存播放
-    if (config.useGoogleTTS) {
-      const googleUrl = `https://www.barryapp.xyz/api/tts?text=${encodeURIComponent(cleanText)}`;
-      // 立即在线播放以避免延迟
-      playAudio(googleUrl);
-      // 后台静默下载缓存
-      preFetchGoogleTTS(cleanText).catch((err) => {
-        console.warn('Background Google pre-fetch failed:', err);
+    if (onProgress) {
+      onProgress(0);
+    }
+
+    downloadAndSaveAudio(downloadUrl, localPath, onProgress)
+      .then((savedPath) => {
+        if (onProgress) {
+          onProgress(100);
+        }
+        playAudio(savedPath);
+      })
+      .catch((err) => {
+        console.warn(`Failed to download audio from ${downloadUrl}, falling back to direct play/Youdao. Error:`, err);
+        if (disableYoudao) {
+          playAudio(downloadUrl);
+        } else {
+          playViaYoudao(cleanText, rate, onStart, onEnded);
+        }
       });
-      return;
-    }
-
-    // 4. 默认回退使用 Edge TTS 发音方案
-    playViaYoudao(cleanText, rate, onStart, onEnded);
 
   } catch (e) {
     console.error('Error playing TTS:', e);

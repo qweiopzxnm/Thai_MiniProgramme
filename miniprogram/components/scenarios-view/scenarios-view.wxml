@@ -275,7 +275,11 @@
                       <text class="word-text-below">{{w.word}}</text>
                     </view>
                   </view>
-                  <image class="play-mini-icon" src="/assets/icons/volume-small.svg" />
+                  <view class="audio-loading-spinner-wrap" wx:if="{{index === currentTurnIndex && isAudioBuffering}}">
+                    <view class="audio-loading-spinner"></view>
+                    <text class="download-progress-text" wx:if="{{audioDownloadProgress > 0 && audioDownloadProgress < 100}}">{{audioDownloadProgress}}%</text>
+                  </view>
+                  <image class="play-mini-icon" src="/assets/icons/volume-small.svg" wx:else />
                 </view>
                 <view class="narrative-chinese">{{item.chinese}}</view>
               </view>
@@ -315,7 +319,11 @@
                         <text class="word-text-below">{{w.word}}</text>
                       </view>
                     </view>
-                    <image class="play-mini-icon" src="/assets/icons/volume-small.svg" />
+                    <view class="audio-loading-spinner-wrap" wx:if="{{index === currentTurnIndex && isAudioBuffering}}">
+                      <view class="audio-loading-spinner"></view>
+                      <text class="download-progress-text" wx:if="{{audioDownloadProgress > 0 && audioDownloadProgress < 100}}">{{audioDownloadProgress}}%</text>
+                    </view>
+                    <image class="play-mini-icon" src="/assets/icons/volume-small.svg" wx:else />
                   </view>
                   <view class="speech-chinese">{{item.chinese}}</view>
                 </view>
@@ -350,9 +358,10 @@
           上一句
         </button>
         
-        <button class="ctrl-btn play-again" bindtap="onReplayTurn">
-          <image class="btn-icon" src="/assets/icons/volume.svg" />
-          <text>发音</text>
+        <button class="ctrl-btn play-again {{isAudioBuffering ? 'loading-state' : ''}}" bindtap="onReplayTurn" disabled="{{isAudioBuffering}}">
+          <view class="btn-spinner" wx:if="{{isAudioBuffering}}"></view>
+          <image class="btn-icon" src="/assets/icons/volume.svg" wx:else />
+          <text>{{isAudioBuffering ? (audioDownloadProgress > 0 && audioDownloadProgress < 100 ? '下载中 ' + audioDownloadProgress + '%' : '加载中...') : '发音'}}</text>
         </button>
         
         <button 

@@ -1400,3 +1400,55 @@
   50% { transform: scale(1.4); }
   100% { transform: scale(1); }
 }
+
+/* 音频下载与缓冲加载样式 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.audio-loading-spinner-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.download-progress-text {
+  font-size: 11px;
+  color: #4f46e5;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.audio-loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(79, 70, 229, 0.2);
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  box-sizing: border-box;
+  margin-right: 6px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ctrl-btn.play-again.loading-state {
+  background: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+  cursor: not-allowed;
+}
