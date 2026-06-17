@@ -2,7 +2,7 @@
 <view class="scenarios-container">
   
   <!-- 1. 场景/课文列表页 -->
-  <view class="list-wrapper" wx:if="{{!activeScenario}}">
+  <view class="list-wrapper" hidden="{{!!activeScenario}}">
     <!-- 顶层子板块切换 (情景对话 vs 常用短语) -->
     <view class="sub-tab-bar">
       <view class="sub-tab-item {{activeSubTab === 'scenarios' ? 'active' : ''}}" data-tab="scenarios" bindtap="onSwitchSubTab">
@@ -197,7 +197,7 @@
   </view>
 
   <!-- 2. 交互式剧场播放页 -->
-  <view class="player-wrapper" wx:else>
+  <view class="player-wrapper" wx:if="{{activeScenario}}">
     <!-- 顶部状态栏 -->
     <view class="player-header">
       <view class="back-action" bindtap="onBackToList">
