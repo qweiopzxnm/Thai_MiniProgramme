@@ -185,9 +185,9 @@ export function stopThaiTTS(): void {
 
 
 /**
- * 使用有道接口进行播放（含单字直播与句子拆分自愈）
+ * 使用 Vercel Edge TTS 自建接口进行流式直接播放
  */
-function playViaYoudao(
+function playViaEdgeTTS(
   cleanText: string,
   rate: number,
   onStart?: () => void,
@@ -259,7 +259,7 @@ function playViaYoudao(
     }, 30) as unknown as number;
 
   } catch (e) {
-    console.error('Error in playViaYoudao (Edge TTS):', e);
+    console.error('Error in playViaEdgeTTS:', e);
     if (onEnded) {
       try {
         onEnded();
@@ -452,7 +452,7 @@ export function preFetchGoogleTTS(text: string): Promise<string> {
  * @param text 要播放的泰语文本
  * @param onStart 播放开始回调
  * @param onEnded 播放结束回调
- * @param disableYoudao 是否禁用有道发音通道（默认为 false）
+ * @param disableYoudao 已废弃，无实际作用
  * @param onProgress 下载进度回调，接收 0-100 的数值
  */
 export function playThaiTTS(
@@ -536,19 +536,9 @@ export function playThaiTTS(
           }
         }
 
-        if (disableYoudao) {
-          console.error(`Static audio failed to play, Youdao fallback is disabled for this sentence: "${cleanText}" (src: ${src}). Error:`, err);
-          stopThaiTTS();
-          const cb = globalOnEnded;
-          if (cb) {
-            try {
-              cb();
-            } catch (e) {}
-          }
-        } else {
-          console.warn(`Google/Gitee TTS playback failed for "${cleanText}" (src: ${src}), falling back to Youdao. Error:`, err);
-          playViaYoudao(cleanText, rate, undefined, onEnded);
-        }
+        // 已完全废弃有道，发生播放错误时直接统一使用 Edge TTS 兜底播放
+        console.warn(`Playback failed for "${cleanText}" (src: ${src}), falling back to Edge TTS streaming. Error:`, err);
+        playViaEdgeTTS(cleanText, rate, undefined, onEnded);
       });
 
       playTimeoutId = setTimeout(() => {
@@ -593,14 +583,10 @@ export function playThaiTTS(
     // 3. 依次尝试候选下载地址，每个地址拥有 2.5s 独立超时限制
     const tryDownloadAndPlay = (urlIndex: number) => {
       if (urlIndex >= urls.length) {
-        // 如果所有 CDN 镜像和 Vercel 均失败，最终走有道接口流式播放（最终兜底）
-        console.warn(`All download options failed for "${cleanText}", falling back to Youdao direct streaming.`);
+        // 如果所有 CDN 镜像均下载失败，最终使用 Edge TTS 接口流式直接播放（最终兜底）
+        console.warn(`All download options failed for "${cleanText}", falling back to Edge TTS streaming.`);
         finishProgressSimulation(onProgress);
-        if (disableYoudao) {
-          playAudio(urls[urls.length - 1]);
-        } else {
-          playViaYoudao(cleanText, rate, onStart, onEnded);
-        }
+        playViaEdgeTTS(cleanText, rate, onStart, onEnded);
         return;
       }
 
