@@ -109,3 +109,29 @@
   - `ไปด้วย`（pi-dwy）：`附和`（Error） -> **`一起去 / 顺带 / 一起`**（Correct）
 
 同时在 [scenarios.ts](file:///c:/Users/m1774/Desktop/Thai/miniprogram/utils/scenarios.ts#L4536-4541) 中，将 `business_16_d4` 的中文整句翻译修改为“是的，无法连接。包括数据库和其他管理系统也都会受影响。”，使整句意思与词汇“ฐานข้อมูล”（数据库）、“ระบบการจัดการ”（管理系统）保持 100% 同步通顺。
+
+---
+
+## 2026-06-18 11:30 优化：平滑音频下载模拟进度条，彻底解决“0% 或 100%”跳转问题
+
+我们已成功优化了音频播放的进度条显示逻辑，彻底解决了国内用户在下载音频时，进度条“几乎要么是 0%，要么是 100%”的跳跃卡顿问题：
+
+### 1. 问题根源分析
+- **Content-Length 缺失**：国内用户下载音频多通过 CDN 镜像或 Vercel Edge 函数，这些无服务器（Serverless）或压缩网关在返回音频流时常使用 `Transfer-Encoding: chunked`（分块传输），导致 HTTP 响应头中**没有 `Content-Length` 字段**。
+- **触发微信 Progress 重置**：由于没有 `Content-Length`，微信小程序的 `downloadTask.onProgressUpdate` 回调在下载中会不断返回 `res.progress = 0`，直至下载完成瞬间变为 `100`。
+- **模拟器被频繁 Reset**：原版代码中每次收到 `progress === 0` 时，都会在页面上清空模拟定时器并重置为 `8%`。在较慢的网络下，网络请求多次下发 `0` 的进度回调，导致进度条被反复重置回 `8%`（视觉上卡在 0%），下载完又瞬间跳到 `100%`。
+- **WXML 条件判定错误**：在 `index.wxml` 中使用了 `{{showAudioProgress && audioLoadingProgress < 100 ? 'show' : ''}}`，导致当进度条到达 `100%` 满格的瞬间，样式直接隐藏了弹窗，使得我们在 JS 中设置 of 600ms 淡出延迟完全没有生效，用户根本看不到进度条满格状态。
+
+### 2. 解决方案与重构
+- **模块级统一仿真调度**：
+  - 将平滑仿真定时器（NProgress-style）完全收敛至 [tts.ts](file:///c:/Users/m1774/Desktop/Thai/miniprogram/utils/tts.ts) 中管理。
+  - 在播放开始且本地无缓存时，触发 `startProgressSimulation`，由 tts.ts 每 100ms 自动平滑爬升进度值（爬升规律：8% -> 96%，并停留在 96% 处等待）。
+- **屏蔽 `progress = 0` 的网络重置**：
+  - 在网络下载进度回调中，仅在 `p > currentSimProgress`（真实进度领先于仿真进度）时，才同步并更新当前进度。
+  - 彻底屏蔽了 `progress === 0` 对已启动仿真定时器的影响，避免了因 chunked 传输导致进度被反复重置的 Bug。
+- **无感 Failover（多镜像重试）**：
+  - 移除了不同 CDN 地址间切换重试时的 `triggerGlobalProgress(0)` 动作，重试过程在后台平滑过渡，进度条不再会因为 CDN 节点切换而频繁跳回起点，提供了一气呵成的流畅爬升效果。
+- **修复 WXML 淡出过渡**：
+  - 将 `index.wxml` 中的悬浮窗显示条件精简为 `{{showAudioProgress ? 'show' : ''}}`。
+  - 现在，进度条到达 100% 满格状态后，会优雅地保持显示 600ms 以提供积极的视觉反馈，随后平滑淡出隐藏，极大地提升了用户等待时的心理舒适度。
+

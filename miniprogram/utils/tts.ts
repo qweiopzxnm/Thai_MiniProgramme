@@ -24,6 +24,110 @@ let playTimeoutId: number | null = null;
 let globalOnEnded: (() => void) | null = null;
 let activePlayDownloadTask: WechatMiniprogram.DownloadTask | null = null;
 
+let simProgressTimerId: any = null;
+let currentSimProgress = 0;
+
+/**
+ * 停止模拟进度条定时器
+ */
+function stopProgressSimulation(): void {
+  if (simProgressTimerId) {
+    clearInterval(simProgressTimerId);
+    simProgressTimerId = null;
+  }
+  currentSimProgress = 0;
+}
+
+/**
+ * 开启模拟平滑进度条
+ */
+function startProgressSimulation(onProgressCallback?: (p: number) => void): void {
+  stopProgressSimulation();
+  
+  currentSimProgress = 8;
+  
+  const reportProgress = (p: number) => {
+    if (onProgressCallback) {
+      try {
+        onProgressCallback(p);
+      } catch (e) {
+        console.error('onProgressCallback error:', e);
+      }
+    }
+    try {
+      const app = getApp<IAppOption>();
+      if (app && app.globalData && typeof app.globalData.audioProgressListener === 'function') {
+        app.globalData.audioProgressListener(p);
+      }
+    } catch (e) {
+      console.error('audioProgressListener error:', e);
+    }
+  };
+
+  reportProgress(currentSimProgress);
+
+  simProgressTimerId = setInterval(() => {
+    let increment = 0;
+    if (currentSimProgress < 30) {
+      increment = Math.random() * 8 + 5; // 5% - 13%
+    } else if (currentSimProgress < 60) {
+      increment = Math.random() * 4 + 2; // 2% - 6%
+    } else if (currentSimProgress < 85) {
+      increment = Math.random() * 2 + 1; // 1% - 3%
+    } else if (currentSimProgress < 96) {
+      increment = 0.5;
+    } else {
+      return; // 停在 96% 处等待完成信号
+    }
+
+    currentSimProgress = Math.min(96, currentSimProgress + increment);
+    reportProgress(Math.floor(currentSimProgress));
+  }, 100);
+}
+
+/**
+ * 完成进度条，设为 100% 并清除定时器
+ */
+function finishProgressSimulation(onProgressCallback?: (p: number) => void): void {
+  stopProgressSimulation();
+  
+  const reportProgress = (p: number) => {
+    if (onProgressCallback) {
+      try { onProgressCallback(p); } catch (e) {}
+    }
+    try {
+      const app = getApp<IAppOption>();
+      if (app && app.globalData && typeof app.globalData.audioProgressListener === 'function') {
+        app.globalData.audioProgressListener(p);
+      }
+    } catch (e) {}
+  };
+  
+  reportProgress(100);
+}
+
+/**
+ * 取消并重置进度条，设为 -1
+ */
+function clearProgressSimulation(onProgressCallback?: (p: number) => void): void {
+  stopProgressSimulation();
+  
+  const reportProgress = (p: number) => {
+    if (onProgressCallback) {
+      try { onProgressCallback(p); } catch (e) {}
+    }
+    try {
+      const app = getApp<IAppOption>();
+      if (app && app.globalData && typeof app.globalData.audioProgressListener === 'function') {
+        app.globalData.audioProgressListener(p);
+      }
+    } catch (e) {}
+  };
+  
+  reportProgress(-1);
+}
+
+
 // 在模块加载时提前设置全局音频选项，避免在首次播放时触发系统音频通道重置导致首句声音截断
 if (wx.setInnerAudioOption) {
   wx.setInnerAudioOption({
@@ -55,13 +159,8 @@ export function stopThaiTTS(): void {
   
   globalOnEnded = null;
 
-  // 通知全局隐藏进度条
-  try {
-    const app = getApp<IAppOption>();
-    if (app && app.globalData && typeof app.globalData.audioProgressListener === 'function') {
-      app.globalData.audioProgressListener(-1);
-    }
-  } catch (e) {}
+  // 通知全局隐藏进度条并清理仿真定时器
+  clearProgressSimulation();
 
   // 终止正在进行的播放下载任务，防止积压堵塞及旧发音在切换后突然播放
   if (activePlayDownloadTask) {
@@ -363,14 +462,6 @@ export function playThaiTTS(
   disableYoudao: boolean = false,
   onProgress?: (progress: number) => void
 ): void {
-  // 全局进度汇报辅助函数
-  const app = getApp<IAppOption>();
-  const triggerGlobalProgress = (p: number) => {
-    if (app && app.globalData && typeof app.globalData.audioProgressListener === 'function') {
-      app.globalData.audioProgressListener(p);
-    }
-  };
-
   try {
     // 停止当前播放并清空状态
     stopThaiTTS();
@@ -383,9 +474,6 @@ export function playThaiTTS(
       if (onEnded) onEnded();
       return;
     }
-
-    // 触发全局进度开始 (0%)
-    triggerGlobalProgress(0);
 
     const { ctxA } = getAudioContexts();
     globalOnEnded = onEnded || null;
@@ -478,13 +566,13 @@ export function playThaiTTS(
 
     // 1. 优先播放本地持久化缓存（不管是 Gitee 缓存下来的还是 Google 在线缓存下来的）
     if (isAudioCached(localPath)) {
-      if (onProgress) {
-        onProgress(100);
-      }
-      triggerGlobalProgress(100);
+      finishProgressSimulation(onProgress);
       playAudio(localPath);
       return;
     }
+
+    // 开启进度条模拟
+    startProgressSimulation(onProgress);
 
     // 2. 准备候选下载地址列表 (包含国内高速 CDN 镜像及 Vercel 兜底)
     const urls: string[] = [];
@@ -507,7 +595,7 @@ export function playThaiTTS(
       if (urlIndex >= urls.length) {
         // 如果所有 CDN 镜像和 Vercel 均失败，最终走有道接口流式播放（最终兜底）
         console.warn(`All download options failed for "${cleanText}", falling back to Youdao direct streaming.`);
-        triggerGlobalProgress(100);
+        finishProgressSimulation(onProgress);
         if (disableYoudao) {
           playAudio(urls[urls.length - 1]);
         } else {
@@ -517,22 +605,25 @@ export function playThaiTTS(
       }
 
       const currentUrl = urls[urlIndex];
-      if (onProgress) {
-        onProgress(0);
-      }
-      triggerGlobalProgress(0);
 
       downloadAndSaveAudio(currentUrl, localPath, (p) => {
-        if (onProgress) {
-          onProgress(p);
+        // 如果收到真实进度且大于当前模拟进度，则更新模拟进度并回调
+        if (p > currentSimProgress && p < 100) {
+          currentSimProgress = p;
+          
+          if (onProgress) {
+            try { onProgress(Math.floor(p)); } catch (e) {}
+          }
+          try {
+            const app = getApp<IAppOption>();
+            if (app && app.globalData && typeof app.globalData.audioProgressListener === 'function') {
+              app.globalData.audioProgressListener(Math.floor(p));
+            }
+          } catch (e) {}
         }
-        triggerGlobalProgress(p);
       }, true)
         .then((savedPath) => {
-          if (onProgress) {
-            onProgress(100);
-          }
-          triggerGlobalProgress(100);
+          finishProgressSimulation(onProgress);
           playAudio(savedPath);
         })
         .catch((err) => {
@@ -545,7 +636,7 @@ export function playThaiTTS(
 
   } catch (e) {
     console.error('Error playing TTS:', e);
-    triggerGlobalProgress(100);
+    finishProgressSimulation(onProgress);
     if (onEnded) {
       try {
         onEnded();

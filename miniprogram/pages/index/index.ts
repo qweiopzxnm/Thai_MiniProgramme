@@ -1,6 +1,4 @@
 // pages/index/index.ts
-let simIntervalId: any = null;
-let currentSimProgress = 0;
 
 Component({
   /**
@@ -22,72 +20,28 @@ Component({
       const app = getApp<IAppOption>();
       if (app && app.globalData) {
         app.globalData.audioProgressListener = (progress: number) => {
-          // 清理旧定时器
-          const clearTimer = () => {
-            if (simIntervalId) {
-              clearInterval(simIntervalId);
-              simIntervalId = null;
-            }
-          };
-
           if (progress === -1) {
-            clearTimer();
             this.setData({
               audioLoadingProgress: 0,
               showAudioProgress: false
             });
-            currentSimProgress = 0;
-          } else if (progress === 0) {
-            clearTimer();
-            currentSimProgress = 8;
-            this.setData({
-              audioLoadingProgress: 8,
-              showAudioProgress: true
-            });
-
-            // 开启模拟平滑进度条
-            simIntervalId = setInterval(() => {
-              let increment = 0;
-              if (currentSimProgress < 30) {
-                increment = Math.random() * 8 + 5; // 5% - 13%
-              } else if (currentSimProgress < 60) {
-                increment = Math.random() * 4 + 2; // 2% - 6%
-              } else if (currentSimProgress < 85) {
-                increment = Math.random() * 2 + 1; // 1% - 3%
-              } else if (currentSimProgress < 96) {
-                increment = 0.5;
-              } else {
-                return; // 停在 96% 处等待真实 100% 信号
-              }
-
-              currentSimProgress = Math.min(96, currentSimProgress + increment);
-              this.setData({
-                audioLoadingProgress: Math.floor(currentSimProgress)
-              });
-            }, 100);
-
           } else if (progress === 100) {
-            clearTimer();
-            currentSimProgress = 100;
             this.setData({
               audioLoadingProgress: 100
             });
             // 延迟淡出，确保视觉上能看到 100% 满格的状态，提升体验
             setTimeout(() => {
-              if (currentSimProgress === 100) {
+              if (this.data.audioLoadingProgress === 100) {
                 this.setData({
                   showAudioProgress: false
                 });
               }
             }, 600);
           } else {
-            // 如果收到了网络真实进度，且真实进度比模拟进度更快，则同步真实进度
-            if (progress > currentSimProgress && progress < 100) {
-              currentSimProgress = progress;
-              this.setData({
-                audioLoadingProgress: Math.floor(progress)
-              });
-            }
+            this.setData({
+              audioLoadingProgress: Math.floor(progress),
+              showAudioProgress: true
+            });
           }
         };
       }

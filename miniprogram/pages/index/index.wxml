@@ -2,7 +2,7 @@
 <navigation-bar title="{{navTitle}}" back="{{false}}" color="#111827" background="#FFFFFF"></navigation-bar>
 
 <!-- 全局音频下载进度悬浮窗 -->
-<view class="global-audio-loading-overlay {{showAudioProgress && audioLoadingProgress < 100 ? 'show' : ''}}">
+<view class="global-audio-loading-overlay {{showAudioProgress ? 'show' : ''}}">
   <view class="loading-card">
     <view class="loading-icon-wrap">
       <view class="loading-wave">
