@@ -192,11 +192,16 @@ export function stopThaiTTS(): void {
   if (ctxA) {
     try {
       ctxA.stop();
-      ctxA.destroy(); // 销毁实例并释放微信底层音频资源，彻底防止微信底层播放通道挂起或状态死锁
+      try {
+        ctxA.src = ''; // 重置 src 以释放音频资源，防止微信底层播放通道挂起或状态死锁
+      } catch (err) {}
+      ctxA.offPlay();
+      ctxA.offCanplay();
+      ctxA.offEnded();
+      ctxA.offError();
     } catch (e) {
-      console.error('Failed to stop/destroy ctxA:', e);
+      console.error('Failed to stop ctxA:', e);
     }
-    ctxA = null; // 设置为 null，下次播放时自动创建全新实例
   }
 }
 
