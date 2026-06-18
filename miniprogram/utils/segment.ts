@@ -13,6 +13,20 @@ export interface SegmentedWord {
 }
 
 /**
+ * 合并查找内置词典和用户自定义词典
+ */
+function lookupWordWithUser(word: string): { phonetic: string; meaning: string } | null {
+  const userDict = getUserDict();
+  if (userDict && userDict[word]) {
+    return {
+      phonetic: userDict[word].phonetic,
+      meaning: userDict[word].meaning
+    };
+  }
+  return lookupWord(word);
+}
+
+/**
  * 获取所有字典词汇列表（按长度降序排列）
  */
 function getSortedDictWords(): string[] {
@@ -45,14 +59,31 @@ function segmentUnknownText(text: string): string[] {
           result.push(word);
         }
       }
+      
+      // 优化分词：如果分词结果中包含长度为 1 的单个泰文字符，
+      // 或者平均词长过短，说明 Intl.Segmenter 无法识别该词并退化为了字符/音节拆分。
+      // 此时我们应该将整段未知文本作为一个整体词汇处理，防止被拆碎成无意义的单字。
+      if (result.length > 1) {
+        const hasSingleThaiChar = result.some(w => {
+          return w.length === 1 && /[\u0e00-\u0e7f]/.test(w);
+        });
+        
+        const totalLen = result.reduce((sum, w) => sum + w.length, 0);
+        const avgLen = totalLen / result.length;
+        
+        if (hasSingleThaiChar || avgLen < 2.5) {
+          return [trimmed];
+        }
+      }
+      
       return result;
     } catch (e) {
       console.error('Intl.Segmenter failed:', e);
     }
   }
   
-  // 兜底：如果不支持 Intl.Segmenter，或者出错，按泰文字符或空格简单拆分
-  return trimmed.split('').filter(char => char.trim() !== '');
+  // 兜底：如果不支持 Intl.Segmenter，或者出错，按泰文字符或空格不进行强制拆分，作为一个整体
+  return [trimmed];
 }
 
 /**
@@ -74,7 +105,7 @@ export function segmentThai(text: string): SegmentedWord[] {
     if (unknownBuffer.length > 0) {
       const subWords = segmentUnknownText(unknownBuffer);
       for (const w of subWords) {
-        const info = lookupWord(w);
+        const info = lookupWordWithUser(w);
         if (info) {
           result.push({
             word: w,
@@ -121,7 +152,7 @@ export function segmentThai(text: string): SegmentedWord[] {
       if (i + wordLen <= len && cleanedText.substring(i, i + wordLen) === dictWord) {
         flushUnknownBuffer();
 
-        const info = lookupWord(dictWord);
+        const info = lookupWordWithUser(dictWord);
         result.push({
           word: dictWord,
           phonetic: info ? info.phonetic : '',

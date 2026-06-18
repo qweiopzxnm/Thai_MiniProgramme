@@ -21675,6 +21675,14 @@ export const BUILTIN_DICT: { [key: string]: DictEntry } = {
   "กระดุม": {
     "phonetic": "grà-dum",
     "meaning": "纽扣"
+  },
+  "ไอศครีม": {
+    "phonetic": "ai-sà-khriim",
+    "meaning": "冰淇淋"
+  },
+  "ไอศกรีม": {
+    "phonetic": "ai-sà-griim",
+    "meaning": "冰淇淋"
   }
 };
 
